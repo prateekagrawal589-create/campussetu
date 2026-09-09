@@ -121,19 +121,38 @@ class UpdateService {
 
   static Future<String> downloadApk(String apkUrl, {void Function(int received, int total)? onProgress}) async {
     if (Platform.isIOS) throw Exception('iOS sideload not supported');
-    if (await Permission.requestInstallPackages.isDenied) {
-      await Permission.requestInstallPackages.request();
+    var status = await Permission.requestInstallPackages.status;
+    if (status.isDenied) status = await Permission.requestInstallPackages.request();
+    if (status.isPermanentlyDenied || status.isRestricted) {
+      await openAppSettings();
+      throw Exception('Please enable "Install unknown apps" for CampusSetu in Settings, then tap Update again');
     }
-    final dir = await getTemporaryDirectory();
+    if (!status.isGranted && !status.isLimited) {
+      throw Exception('Install permission denied — enable "Install unknown apps"');
+    }
+    final dir = await getExternalStorageDirectory() ?? await getTemporaryDirectory();
     final savePath = '${dir.path}/campussetu_update.apk';
-    await _dio.download(apkUrl, savePath, onReceiveProgress: onProgress, options: Options(followRedirects: true));
+    final file = File(savePath);
+    if (await file.exists()) await file.delete();
+    if (kDebugMode) debugPrint('Downloading $apkUrl -> $savePath');
+    final response = await _dio.download(apkUrl, savePath, onReceiveProgress: onProgress, options: Options(followRedirects: true, validateStatus: (s) => s != null && s < 400, headers: {'User-Agent': 'CampusSetu-App'}));
+    if (response.statusCode != null && response.statusCode! >= 400) throw Exception('Download failed: ${response.statusCode}');
+    final f = File(savePath);
+    if (!await f.exists() || await f.length() < 1024 * 1024) throw Exception('Downloaded file invalid (maybe 404). Check release has app-release.apk');
     return savePath;
   }
 
   static Future<void> installApk(String path) async {
+    final file = File(path);
+    if (!await file.exists()) throw Exception('APK not found at $path');
     final result = await OpenFilex.open(path);
-    if (kDebugMode) debugPrint('OpenFile result $result');
-    if (result.type != ResultType.done) throw Exception('Install failed: ${result.message}');
+    if (kDebugMode) debugPrint('OpenFile result $result type=${result.type} message=${result.message}');
+    if (result.type != ResultType.done) {
+      if (result.message.contains('No APP found') || result.message.contains('Activity not found')) {
+        throw Exception('No installer found — please enable "Install unknown apps" or open file manually: $path');
+      }
+      throw Exception('Install failed: ${result.message} — try opening $path manually or allow Install unknown apps');
+    }
   }
 
   static Future<bool> updateViaGithub(UpdateInfo info, {void Function(int, int)? onProgress}) async {
