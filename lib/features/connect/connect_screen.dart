@@ -186,13 +186,13 @@ class _DiscoverTab extends ConsumerWidget {
   }
 }
 
-class _RequestsTab extends StatefulWidget {
+class _RequestsTab extends ConsumerStatefulWidget {
   const _RequestsTab();
   @override
-  State<_RequestsTab> createState() => _RequestsTabState();
+  ConsumerState<_RequestsTab> createState() => _RequestsTabState();
 }
 
-class _RequestsTabState extends State<_RequestsTab> {
+class _RequestsTabState extends ConsumerState<_RequestsTab> {
   List<dynamic> _pending = [];
   bool _loading = true;
   String? _error;
@@ -215,7 +215,10 @@ class _RequestsTabState extends State<_RequestsTab> {
   Future<void> _respond(String connectionId, String status) async {
     try {
       await ApiService().respondToConnection(connectionId, status);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(status == 'accepted' ? 'Accepted ✓' : 'Rejected'), backgroundColor: status == 'accepted' ? AppColors.success : AppColors.inkSoft, behavior: SnackBarBehavior.floating));
+      ref.invalidate(profileProvider(null));
+      ref.invalidate(currentUserProvider);
+      ref.invalidate(chatUnreadCountProvider);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(status == 'accepted' ? 'Accepted ✓ — connections +1 for both' : 'Rejected'), backgroundColor: status == 'accepted' ? AppColors.success : AppColors.inkSoft, behavior: SnackBarBehavior.floating));
       _load();
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e'), backgroundColor: AppColors.error));
