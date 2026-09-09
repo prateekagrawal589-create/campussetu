@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../models/post_model.dart';
 import '../services/api_service.dart';
+import '../services/update_service.dart';
 
 Future<void> _ensureToken() async {
   final user = FirebaseAuth.instance.currentUser;
@@ -121,6 +122,10 @@ final jobsNewCountProvider = FutureProvider<int>((ref) async {
     final List list = (res['data'] as List?) ?? [];
     return list.length;
   } catch (_) { return 0; }
+});
+
+final updateAvailableProvider = FutureProvider<UpdateInfo?>((ref) async {
+  try { return await UpdateService.checkForUpdate(); } catch (_) { return null; }
 });
 
 final profileProvider = FutureProvider.family<UserModel, String?>((ref, userId) async {
