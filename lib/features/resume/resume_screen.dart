@@ -201,7 +201,7 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
       backgroundColor: AppColors.bg,
       appBar: AppBar(title: Text('Resume Builder', style: AppTypography.soraHeading3()), backgroundColor: AppColors.bg, elevation: 0, leading: IconButton(icon: Icon(Icons.arrow_back_rounded, color: AppColors.ink), onPressed: () => context.pop())),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+        padding: EdgeInsets.fromLTRB(20, 8, 20, 140 + MediaQuery.of(context).padding.bottom),
         children: [
           Row(children: [
             Text('Choose Template', style: AppTypography.soraHeading3()),
@@ -294,20 +294,47 @@ class _TemplateTile extends StatelessWidget {
   final bool isPremium;
   final bool isLocked;
   const _TemplateTile({required this.name, required this.icon, this.isSelected = false, this.isPremium = false, this.isLocked = false});
+
+  Widget _preview(bool isPremiumStyle) {
+    final headerColor = isPremiumStyle ? const Color(0xFF1A1D24) : AppColors.cyanDeep;
+    final accent = isPremiumStyle ? AppColors.gold : AppColors.cyan;
+    return Container(
+      height: 62,
+      margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.shadowDark.withOpacity(0.3))),
+      child: Column(children: [
+        Container(height: 14, decoration: BoxDecoration(color: headerColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(8))), alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 6), child: Row(children: [Container(width: 18, height: 4, decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(2))), const SizedBox(width: 4), Container(width: 10, height: 4, decoration: BoxDecoration(color: Colors.white.withOpacity(0.6), borderRadius: BorderRadius.circular(2))), const Spacer(), Icon(icon, size: 8, color: Colors.white.withOpacity(0.8))])),
+        Expanded(child: Padding(padding: const EdgeInsets.all(6), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [Expanded(child: Container(height: 3, decoration: BoxDecoration(color: accent.withOpacity(0.8), borderRadius: BorderRadius.circular(2)))), const SizedBox(width: 4), Expanded(child: Container(height: 3, decoration: BoxDecoration(color: AppColors.shadowDark.withOpacity(0.4), borderRadius: BorderRadius.circular(2))))]),
+          const SizedBox(height: 4),
+          Container(height: 2, width: double.infinity, decoration: BoxDecoration(color: AppColors.shadowDark.withOpacity(0.2), borderRadius: BorderRadius.circular(2))),
+          const SizedBox(height: 3),
+          Container(height: 2, width: 60, decoration: BoxDecoration(color: AppColors.shadowDark.withOpacity(0.15), borderRadius: BorderRadius.circular(2))),
+          const SizedBox(height: 4),
+          Row(children: [Container(width: 14, height: 14, decoration: BoxDecoration(color: accent.withOpacity(0.15), borderRadius: BorderRadius.circular(3))), const SizedBox(width: 4), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(height: 2, decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.15), borderRadius: BorderRadius.circular(2))), const SizedBox(height: 2), Container(height: 2, width: 30, decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.1), borderRadius: BorderRadius.circular(2)))]))]),
+        ]))),
+      ]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => Container(
     decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), boxShadow: isSelected ? AppColors.cyanGlowShadows : AppColors.neuRaisedShadows, border: isSelected ? Border.all(color: AppColors.cyan, width: 2) : null, color: AppColors.bg),
     child: Stack(children: [
-      Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(icon, size: 32, color: isLocked ? AppColors.inkMuted : (isSelected ? AppColors.cyanDeep : AppColors.inkSoft)),
+      Column(children: [
+        _preview(isPremium),
         const SizedBox(height: 6),
-        Text(name, style: AppTypography.interButton(color: isLocked ? AppColors.inkMuted : (isSelected ? AppColors.cyanDeep : AppColors.ink), size: 11), textAlign: TextAlign.center),
-        if (isSelected) ...[const SizedBox(height: 4), const NeuChip(label: '✓ Selected')] else if (isPremium) ...[const SizedBox(height: 4), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(6)), child: Text('PRO', style: AppTypography.interBadge(color: AppColors.gold))) ] else ...[const SizedBox(height: 4), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Text('FREE', style: AppTypography.interBadge(color: AppColors.success)))],
+        Text(name, style: AppTypography.interButton(color: isLocked ? AppColors.inkMuted : (isSelected ? AppColors.cyanDeep : AppColors.ink), size: 11), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+        const SizedBox(height: 3),
+        if (isSelected) const NeuChip(label: '✓ Selected') else if (isPremium) Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(6)), child: Text('PRO', style: AppTypography.interBadge(color: AppColors.gold))) else Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Text('FREE', style: AppTypography.interBadge(color: AppColors.success))),
+        const SizedBox(height: 6),
       ]),
       if (isLocked)
-        Container(decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.45), borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: Icon(Icons.lock_rounded, color: Colors.white, size: 22)),
+        Container(decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.45), borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: const Icon(Icons.lock_rounded, color: Colors.white, size: 22)),
       if (isPremium && !isLocked)
         const Positioned(top: 6, right: 6, child: PremiumBadge(label: 'PRO', isSmall: true)),
+      if (isSelected)
+        Positioned(top: 6, left: 6, child: Container(width: 16, height: 16, decoration: const BoxDecoration(color: AppColors.cyanDeep, shape: BoxShape.circle), child: const Icon(Icons.check_rounded, size: 10, color: Colors.white))),
     ]),
   );
 }
