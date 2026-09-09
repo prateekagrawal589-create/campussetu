@@ -28,8 +28,8 @@ class UpdateInfo {
 }
 
 class UpdateService {
-  static const String githubRepo = 'prateek155/campussetu';
-  static const String githubApi = 'https://api.github.com/repos/prateek155/campussetu/releases/latest';
+  static const String githubRepo = 'prateekagrawal589-create/campussetu';
+  static const String githubApi = 'https://api.github.com/repos/prateekagrawal589-create/campussetu/releases/latest';
   static const String fallbackVersionUrl = 'https://campussetu-production.up.railway.app/api/v1/version';
 
   static final Dio _dio = Dio();
@@ -54,7 +54,7 @@ class UpdateService {
 
       // 2. Try GitHub releases
       try {
-        final res = await _dio.get(githubApi, options: Options(headers: {'Accept': 'application/vnd.github.v3+json'}));
+        final res = await _dio.get(githubApi, options: Options(headers: {'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'CampusSetu-App'}));
         if (res.statusCode == 200 && res.data is Map) {
           final tag = (res.data['tag_name'] ?? '').toString().replaceAll('v', '');
           final notes = (res.data['body'] ?? '').toString();
@@ -71,18 +71,36 @@ class UpdateService {
           final info = UpdateInfo(currentVersion: currentShort, latestVersion: tag.isEmpty ? currentShort : tag, apkUrl: apkUrl, releaseNotes: notes);
           if (info.hasUpdate) return info;
         }
-      } catch (e) { if (kDebugMode) debugPrint('GH check failed $e'); }
+      } catch (e) { if (kDebugMode) debugPrint('GH releases check failed $e'); }
 
-      // 3. Fallback: backend health version
+      // 2b. Try raw pubspec.yaml (no Release needed — just push + version bump)
+      try {
+        final res = await _dio.get('https://raw.githubusercontent.com/$githubRepo/main/pubspec.yaml', options: Options(headers: {'Cache-Control': 'no-cache'}));
+        if (res.statusCode == 200 && res.data is String) {
+          final match = RegExp(r'version:\s*([0-9]+\.[0-9]+\.[0-9]+)').firstMatch(res.data as String);
+          if (match != null) {
+            final tag = match.group(1)!;
+            final apkUrl = 'https://github.com/$githubRepo/releases/latest/download/app-release.apk';
+            final info = UpdateInfo(currentVersion: currentShort, latestVersion: tag, apkUrl: apkUrl, releaseNotes: 'New version $tag available — please update');
+            if (info.hasUpdate) return info;
+          }
+        } else if (res.statusCode == 200 && res.data is Map && res.data['version'] != null) {
+          final tag = res.data['version'].toString().replaceAll('v', '');
+          final info = UpdateInfo(currentVersion: currentShort, latestVersion: tag, apkUrl: 'https://github.com/$githubRepo/releases/latest/download/app-release.apk', releaseNotes: 'Update $tag');
+          if (info.hasUpdate) return info;
+        }
+      } catch (e) { if (kDebugMode) debugPrint('raw pubspec check failed $e'); }
+
+      // 3. Fallback: backend version
       try {
         final res = await _dio.get(fallbackVersionUrl);
         if (res.statusCode == 200 && res.data is Map && res.data['version'] != null) {
-          final tag = res.data['version'].toString();
-          final apk = res.data['apkUrl']?.toString();
+          final tag = res.data['version'].toString().replaceAll('v', '');
+          final apk = res.data['apkUrl']?.toString() ?? 'https://github.com/$githubRepo/releases/latest/download/app-release.apk';
           final info = UpdateInfo(currentVersion: currentShort, latestVersion: tag, apkUrl: apk, releaseNotes: res.data['notes']?.toString());
           if (info.hasUpdate) return info;
         }
-      } catch (_) {}
+      } catch (e) { if (kDebugMode) debugPrint('backend version check failed $e'); }
 
       return null;
     } catch (_) { return null; }
