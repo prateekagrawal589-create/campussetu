@@ -242,7 +242,7 @@ class _PostShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-        child: NeuCard(padding: const EdgeInsets.all(16), child: Column(children: [Container(height: 14, color: AppColors.shadowDark.withOpacity(0.3)), const SizedBox(height: 8), Container(height: 14, color: AppColors.shadowDark.withOpacity(0.2)), const SizedBox(height: 12), Container(height: 80, decoration: BoxDecoration(color: AppColors.shadowDark.withOpacity(0.15), borderRadius: BorderRadius.circular(12)))])),
+        child: NeuCard(padding: EdgeInsets.all(16), child: Column(children: [Container(height: 14, color: AppColors.shadowDark.withOpacity(0.3)), SizedBox(height: 8), Container(height: 14, color: AppColors.shadowDark.withOpacity(0.2)), SizedBox(height: 12), Container(height: 80, decoration: BoxDecoration(color: AppColors.shadowDark.withOpacity(0.15), borderRadius: BorderRadius.circular(12)))])),
       );
 }
 
@@ -333,7 +333,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
                 : _comments.isEmpty
-                    ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.chat_bubble_outline, color: AppColors.inkSoft, size: 32), const SizedBox(height: 8), Text('No comments yet', style: AppTypography.interBody(color: AppColors.inkSoft)), Text('Be the first to comment!', style: AppTypography.interCaption())]))
+                    ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.chat_bubble_outline, color: AppColors.inkSoft, size: 32), SizedBox(height: 8), Text('No comments yet', style: AppTypography.interBody(color: AppColors.inkSoft)), Text('Be the first to comment!', style: AppTypography.interCaption())]))
                     : ListView.separated(
                         itemCount: _comments.length,
                         separatorBuilder: (_, __) => Divider(height: 1, color: AppColors.shadowDark),
@@ -349,7 +349,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
           ),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: TextField(controller: _ctrl, decoration: InputDecoration(hintText: 'Add a comment...', hintStyle: AppTypography.interBody(color: AppColors.inkSoft), filled: true, fillColor: AppColors.bg, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10)), maxLength: 500, buildCounter: (_, {required currentLength, required isFocused, maxLength}) => const SizedBox.shrink())),
+            Expanded(child: TextField(controller: _ctrl, decoration: InputDecoration(hintText: 'Add a comment...', hintStyle: AppTypography.interBody(color: AppColors.inkSoft), filled: true, fillColor: AppColors.bg, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none), contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10)), maxLength: 500, buildCounter: (_, {required currentLength, required isFocused, maxLength}) => SizedBox.shrink())),
             const SizedBox(width: 8),
             GestureDetector(
               onTap: _sending ? null : _send,
@@ -361,5 +361,3 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     );
   }
 }
-
-
