@@ -31,6 +31,7 @@ class UpdateService {
   static const String githubRepo = 'prateekagrawal589-create/campussetu';
   static const String githubApi = 'https://api.github.com/repos/prateekagrawal589-create/campussetu/releases/latest';
   static const String fallbackVersionUrl = 'https://campussetu-production.up.railway.app/api/v1/version';
+  static const String rawPubspecUrl = 'https://raw.githubusercontent.com/prateekagrawal589-create/campussetu/main/pubspec.yaml';
 
   static final Dio _dio = Dio();
 
@@ -75,18 +76,13 @@ class UpdateService {
 
       // 2b. Try raw pubspec.yaml (no Release needed — just push + version bump)
       try {
-        final res = await _dio.get('https://raw.githubusercontent.com/$githubRepo/main/pubspec.yaml', options: Options(headers: {'Cache-Control': 'no-cache'}));
-        if (res.statusCode == 200 && res.data is String) {
-          final match = RegExp(r'version:\s*([0-9]+\.[0-9]+\.[0-9]+)').firstMatch(res.data as String);
-          if (match != null) {
-            final tag = match.group(1)!;
-            final apkUrl = 'https://github.com/$githubRepo/releases/latest/download/app-release.apk';
-            final info = UpdateInfo(currentVersion: currentShort, latestVersion: tag, apkUrl: apkUrl, releaseNotes: 'New version $tag available — please update');
-            if (info.hasUpdate) return info;
-          }
-        } else if (res.statusCode == 200 && res.data is Map && res.data['version'] != null) {
-          final tag = res.data['version'].toString().replaceAll('v', '');
-          final info = UpdateInfo(currentVersion: currentShort, latestVersion: tag, apkUrl: 'https://github.com/$githubRepo/releases/latest/download/app-release.apk', releaseNotes: 'Update $tag');
+        final res = await _dio.get(rawPubspecUrl, options: Options(headers: {'Cache-Control': 'no-cache'}, responseType: ResponseType.plain));
+        final body = res.data?.toString() ?? '';
+        final match = RegExp(r'version:\s*([0-9]+\.[0-9]+\.[0-9]+)').firstMatch(body);
+        if (match != null) {
+          final tag = match.group(1)!;
+          final apkUrl = 'https://github.com/$githubRepo/releases/latest/download/app-release.apk';
+          final info = UpdateInfo(currentVersion: currentShort, latestVersion: tag, apkUrl: apkUrl, releaseNotes: 'New version $tag available — please update');
           if (info.hasUpdate) return info;
         }
       } catch (e) { if (kDebugMode) debugPrint('raw pubspec check failed $e'); }
