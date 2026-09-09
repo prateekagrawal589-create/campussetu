@@ -61,6 +61,14 @@ app.get('/api/v1/health', (req, res) => {
 app.get('/api/v1/chats', (req, res) => {
   res.json([]);
 });
+app.get('/api/v1/version', (req, res) => {
+  try {
+    const pkg = require('../package.json');
+    res.json({ version: pkg.version, apkUrl: 'https://github.com/prateek155/campussetu/releases/latest/download/app-release.apk', notes: 'Update available on GitHub' });
+  } catch (_) {
+    res.json({ version: '1.0.0', apkUrl: 'https://github.com/prateek155/campussetu/releases/latest/download/app-release.apk' });
+  }
+});
 
 // ── 404 handler ────────────────────────────────────────────
 app.use((req, res) => {
