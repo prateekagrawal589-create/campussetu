@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+final authStateProvider = StreamProvider<User?>((ref) => FirebaseAuth.instance.authStateChanges());
+
 import '../../features/auth/welcome_screen.dart';
 import '../../features/auth/auth_confirm_screen.dart';
 import '../../features/auth/profile_setup_screen.dart';
@@ -46,15 +48,19 @@ class AppRoutes {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final authAsync = ref.watch(authStateProvider);
+  final isLoading = authAsync.isLoading;
+  final user = authAsync.value;
   return GoRouter(
     initialLocation: AppRoutes.welcome,
     redirect: (context, state) {
-      final user = FirebaseAuth.instance.currentUser;
+      if (isLoading) return null;
       final isOnAuthRoute = state.matchedLocation == AppRoutes.welcome ||
           state.matchedLocation == AppRoutes.authConfirm ||
           state.matchedLocation == AppRoutes.profileSetup;
 
       if (user == null && !isOnAuthRoute) return AppRoutes.welcome;
+      if (user != null && isOnAuthRoute && state.matchedLocation == AppRoutes.welcome) return AppRoutes.home;
       return null;
     },
     routes: [
