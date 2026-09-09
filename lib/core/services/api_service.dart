@@ -45,7 +45,7 @@ class ApiService {
     ));
   }
 
-  static const String _baseUrl = 'https://campussetu-backend.onrender.com/api/v1';
+  static const String _baseUrl = 'https://campussetu-production.up.railway.app/api/v1';
 
   late final Dio _dio;
   String? _token;
@@ -54,7 +54,24 @@ class ApiService {
   void clearToken() { _token = null; }
 
   void warmup() {
+    Dio().get('https://campussetu-production.up.railway.app/health').catchError((_) {});
     _dio.get('/health').catchError((_) {});
+  }
+
+  Future<List<dynamic>> getPendingRequests() async {
+    final res = await _dio.get('/connect/pending');
+    final data = res.data;
+    if (data is List) return data;
+    if (data is Map && data['data'] is List) return data['data'] as List;
+    return (data as List?) ?? [];
+  }
+
+  Future<List<dynamic>> getMyConnections() async {
+    final res = await _dio.get('/connect/my');
+    final data = res.data;
+    if (data is List) return data;
+    if (data is Map && data['data'] is List) return data['data'] as List;
+    return (data as List?) ?? [];
   }
 
   Future<Map<String, dynamic>> getMe() async {
