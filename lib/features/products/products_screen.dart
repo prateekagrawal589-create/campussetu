@@ -46,7 +46,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           Expanded(
             child: asyncProducts.when(
               data: (products) {
-                if (products.isEmpty) return Center(child: Padding(padding: const EdgeInsets.all(32), child: NeuCard(padding: const EdgeInsets.all(24), child: Column(children: [Icon(Icons.shopping_bag_outlined, size: 40, color: AppColors.inkSoft), const SizedBox(height: 12), Text('No products found', style: AppTypography.soraHeading3()), Text('Try different category', style: AppTypography.interCaption())]))));
+                if (products.isEmpty) return Center(child: Padding(padding: EdgeInsets.all(32), child: NeuCard(padding: EdgeInsets.all(24), child: Column(children: [Icon(Icons.shopping_bag_outlined, size: 40, color: AppColors.inkSoft), SizedBox(height: 12), Text('No products found', style: AppTypography.soraHeading3()), Text('Try different category', style: AppTypography.interCaption())]))));
                 return RefreshIndicator(
                   onRefresh: () async => ref.invalidate(productsProvider(filter)),
                   child: GridView.builder(
@@ -67,7 +67,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   }
 
   void _showSellSheet(BuildContext context) {
-    showModalBottomSheet(context: context, backgroundColor: Colors.transparent, isScrollControlled: true, builder: (_) => Container(margin: const EdgeInsets.all(16), padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20), decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(28), boxShadow: AppColors.neuRaisedShadows), child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.shadowDark, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 20), Text('List an Item', style: AppTypography.soraHeading3()), const SizedBox(height: 16), const NeuTextField(hint: 'Item title', label: 'Title'), const SizedBox(height: 12), const NeuTextField(hint: 'Describe your item...', label: 'Description', maxLines: 3), const SizedBox(height: 12), const NeuTextField(hint: '₹ 0', label: 'Price', keyboardType: TextInputType.number), const SizedBox(height: 20), Container(width: double.infinity, height: 54, decoration: BoxDecoration(gradient: AppColors.cyanGradient, borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: Text('Post Listing', style: AppTypography.interButton(color: Colors.white)))]))));
+    showModalBottomSheet(context: context, backgroundColor: Colors.transparent, isScrollControlled: true, builder: (_) => Container(margin: EdgeInsets.all(16), padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20), decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(28), boxShadow: AppColors.neuRaisedShadows), child: Padding(padding: EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.shadowDark, borderRadius: BorderRadius.circular(2)))), SizedBox(height: 20), Text('List an Item', style: AppTypography.soraHeading3()), SizedBox(height: 16), NeuTextField(hint: 'Item title', label: 'Title'), SizedBox(height: 12), const NeuTextField(hint: 'Describe your item...', label: 'Description', maxLines: 3), SizedBox(height: 12), const NeuTextField(hint: '₹ 0', label: 'Price', keyboardType: TextInputType.number), SizedBox(height: 20), Container(width: double.infinity, height: 54, decoration: BoxDecoration(gradient: AppColors.cyanGradient, borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: Text('Post Listing', style: AppTypography.interButton(color: Colors.white)))]))));
   }
 }
 
@@ -94,7 +94,7 @@ class _ProductTile extends StatelessWidget {
         const SizedBox(height: 4),
         Text(desc, style: AppTypography.interCaption(), maxLines: 2, overflow: TextOverflow.ellipsis),
         const Spacer(),
-        Row(children: [Text(price, style: AppTypography.monoCode(size: 15, weight: FontWeight.w700, color: AppColors.ink)), const Spacer(), Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(gradient: AppColors.cyanGradient, borderRadius: BorderRadius.circular(8)), child: Icon(Icons.chat_bubble_outline, size: 14, color: Colors.white))]),
+        Row(children: [Text(price, style: AppTypography.monoCode(size: 15, weight: FontWeight.w700, color: AppColors.ink)), Spacer(), Container(padding: EdgeInsets.all(6), decoration: BoxDecoration(gradient: AppColors.cyanGradient, borderRadius: BorderRadius.circular(8)), child: Icon(Icons.chat_bubble_outline, size: 14, color: Colors.white))]),
       ]),
     );
   }
