@@ -77,7 +77,7 @@ class ProfileScreen extends ConsumerWidget {
                       onTap: () => isOwn ? _openEdit(context, ref, user) : null,
                       child: Stack(alignment: Alignment.bottomRight, children: [
                         EnergyRing(progress: user.profileCompletionScore, size: 86, centerChild: UserAvatar(name: user.name, imageUrl: user.photoUrl, size: 64, isVerified: user.isVerified)),
-                        if (isOwn) Container(padding: const EdgeInsets.all(5), decoration: BoxDecoration(color: AppColors.cyanDeep, shape: BoxShape.circle, border: Border.all(color: AppColors.bg, width: 2)), child: const Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white)),
+                        if (isOwn) Container(padding: EdgeInsets.all(5), decoration: BoxDecoration(color: AppColors.cyanDeep, shape: BoxShape.circle, border: Border.all(color: AppColors.bg, width: 2)), child: Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white)),
                       ]),
                     ),
                     const SizedBox(width: 16),
@@ -86,7 +86,7 @@ class ProfileScreen extends ConsumerWidget {
                       Text('${user.course ?? ''} · ${user.branch ?? ''}', style: AppTypography.interBodySmall()),
                       Text('${user.college ?? ''} · Year ${user.yearOfStudy ?? '-'}', style: AppTypography.interCaption()),
                       const SizedBox(height: 4),
-                      Row(children: [Icon(Icons.location_on_outlined, size: 13, color: AppColors.inkSoft), const SizedBox(width: 4), Text('${user.city ?? ''}, ${user.state ?? ''}', style: AppTypography.interCaption())]),
+                      Row(children: [Icon(Icons.location_on_outlined, size: 13, color: AppColors.inkSoft), SizedBox(width: 4), Text('${user.city ?? ''}, ${user.state ?? ''}', style: AppTypography.interCaption())]),
                     ])),
                   ]),
                 ]),
@@ -111,12 +111,12 @@ class ProfileScreen extends ConsumerWidget {
                   Wrap(spacing: 8, runSpacing: 8, children: user.skills.map((s) => NeuChip(label: s)).toList()).animate(delay: 150.ms).fadeIn(duration: 400.ms),
                   const SizedBox(height: 20),
                 ],
-                DarkTile(padding: const EdgeInsets.all(18), onTap: () => context.go(AppRoutes.tshare), child: Row(children: [Icon(Icons.share_outlined, color: AppColors.cyan, size: 22), const SizedBox(width: 14), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [GlowText('Tshare Profile', style: AppTypography.soraHeading3(color: AppColors.cyan)), Text('Share or retrieve code', style: AppTypography.interCaption(color: AppColors.inkSoft))]), const Spacer(), const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.cyanDeep, size: 14)])).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+                DarkTile(padding: EdgeInsets.all(18), onTap: () => context.go(AppRoutes.tshare), child: Row(children: [Icon(Icons.share_outlined, color: AppColors.cyan, size: 22), SizedBox(width: 14), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [GlowText('Tshare Profile', style: AppTypography.soraHeading3(color: AppColors.cyan)), Text('Share or retrieve code', style: AppTypography.interCaption(color: AppColors.inkSoft))]), Spacer(), Icon(Icons.arrow_forward_ios_rounded, color: AppColors.cyanDeep, size: 14)])).animate(delay: 200.ms).fadeIn(duration: 400.ms),
                 const SizedBox(height: 20),
                 Row(children: [
-                  Expanded(child: NeuCard(padding: const EdgeInsets.all(16), onTap: () => context.push(AppRoutes.resume), child: Row(children: [Icon(Icons.article_outlined, color: AppColors.cyanDeep, size: 20), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Resume', style: AppTypography.interButton(color: AppColors.ink, size: 13)), Text('Build & export', style: AppTypography.interCaption())])]))),
+                  Expanded(child: NeuCard(padding: EdgeInsets.all(16), onTap: () => context.push(AppRoutes.resume), child: Row(children: [Icon(Icons.article_outlined, color: AppColors.cyanDeep, size: 20), SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Resume', style: AppTypography.interButton(color: AppColors.ink, size: 13)), Text('Build & export', style: AppTypography.interCaption())])]))),
                   const SizedBox(width: 10),
-                  Expanded(child: NeuCard(padding: const EdgeInsets.all(16), onTap: () => _openSettings(context), child: Row(children: [Icon(Icons.settings_outlined, color: AppColors.inkSoft, size: 20), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Settings', style: AppTypography.interButton(color: AppColors.ink, size: 13)), Text('Account & privacy', style: AppTypography.interCaption())])]))),
+                  Expanded(child: NeuCard(padding: EdgeInsets.all(16), onTap: () => _openSettings(context), child: Row(children: [Icon(Icons.settings_outlined, color: AppColors.inkSoft, size: 20), SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Settings', style: AppTypography.interButton(color: AppColors.ink, size: 13)), Text('Account & privacy', style: AppTypography.interCaption())])]))),
                 ]).animate(delay: 250.ms).fadeIn(duration: 400.ms),
                 if (isOwn) ...[
                   const SizedBox(height: 16),
@@ -140,7 +140,7 @@ class _StatCard extends StatelessWidget {
   final Color color;
   const _StatCard({required this.label, required this.value, required this.icon, this.color = AppColors.cyanDeep});
   @override
-  Widget build(BuildContext context) => Expanded(child: NeuCard(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16), child: Column(children: [Icon(icon, color: color, size: 22), const SizedBox(height: 8), Text(value, style: AppTypography.monoCode(size: 20, weight: FontWeight.w700, color: AppColors.ink)), Text(label, style: AppTypography.interCaption(), textAlign: TextAlign.center)])));
+  Widget build(BuildContext context) => Expanded(child: NeuCard(padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16), child: Column(children: [Icon(icon, color: color, size: 22), SizedBox(height: 8), Text(value, style: AppTypography.monoCode(size: 20, weight: FontWeight.w700, color: AppColors.ink)), Text(label, style: AppTypography.interCaption(), textAlign: TextAlign.center)])));
 }
 
 class _EditProfileSheet extends StatefulWidget {
@@ -203,13 +203,28 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
       ApiService().setToken(token);
       String? uploadedUrl = _photoUrl;
       if (_photoFile != null) {
+        bool firebaseOk = false;
         try {
           final ref = FirebaseStorage.instance.ref().child('profile_pics/$uid.jpg');
           await ref.putFile(_photoFile!, SettableMetadata(contentType: 'image/jpeg'));
           uploadedUrl = await ref.getDownloadURL();
+          firebaseOk = true;
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Photo uploaded to Firebase ✓')));
         } catch (e) {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed, saving without photo: $e')));
-          uploadedUrl = _photoUrl;
+          debugPrint('Firebase upload failed: $e');
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Firebase failed: $e — trying server upload...'), duration: const Duration(seconds: 2)));
+        }
+        if (!firebaseOk) {
+          try {
+            final res = await ApiService().uploadProfilePhoto(uid, _photoFile!.path);
+            uploadedUrl = (res['photo_url'] ?? res['file_url'] ?? res['photoUrl'] ?? '').toString();
+            if (uploadedUrl == null || uploadedUrl.isEmpty) uploadedUrl = _photoUrl;
+            if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Photo uploaded to server ✓'), backgroundColor: AppColors.success));
+          } catch (e) {
+            debugPrint('Backend upload failed: $e');
+            if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e'), backgroundColor: AppColors.error));
+            uploadedUrl = _photoUrl;
+          }
         }
       }
       await ApiService().updateProfile(uid, {
@@ -243,38 +258,42 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(28), boxShadow: AppColors.neuRaisedShadows),
-      child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20, left: 20, right: 20, top: 20),
-        child: SingleChildScrollView(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.shadowDark, borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 16),
-            Text('Edit Profile', style: AppTypography.soraHeading2()),
-            const SizedBox(height: 16),
-            Center(
-              child: GestureDetector(
-                onTap: _pickPhoto,
-                child: Stack(alignment: Alignment.bottomRight, children: [
-                  Container(
-                    width: 96, height: 96,
-                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.cyanDeep, width: 2), boxShadow: AppColors.neuSmallShadows),
-                    child: ClipOval(
-                      child: _photoFile != null
-                          ? Image.file(_photoFile!, fit: BoxFit.cover)
-                          : (_photoUrl != null && _photoUrl!.isNotEmpty
-                              ? Image.network(_photoUrl!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _fallbackAvatar())
-                              : _fallbackAvatar()),
+    final bottomNavPad = 84.0 + MediaQuery.of(context).viewInsets.bottom;
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomNavPad),
+      child: Container(
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(28), boxShadow: AppColors.neuRaisedShadows),
+        child: Padding(
+          padding: EdgeInsets.only(bottom: 20, left: 20, right: 20, top: 20),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.shadowDark, borderRadius: BorderRadius.circular(2)))),
+              const SizedBox(height: 16),
+              Text('Edit Profile', style: AppTypography.soraHeading2()),
+              const SizedBox(height: 16),
+              Center(
+                child: GestureDetector(
+                  onTap: _pickPhoto,
+                  child: Stack(alignment: Alignment.bottomRight, children: [
+                    Container(
+                      width: 96, height: 96,
+                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.cyanDeep, width: 2), boxShadow: AppColors.neuSmallShadows),
+                      child: ClipOval(
+                        child: _photoFile != null
+                            ? Image.file(_photoFile!, fit: BoxFit.cover, width: 96, height: 96)
+                            : (_photoUrl != null && _photoUrl!.isNotEmpty
+                                ? Image.network(_photoUrl!, fit: BoxFit.cover, width: 96, height: 96, errorBuilder: (_, __, ___) => _fallbackAvatar())
+                                : _fallbackAvatar()),
+                      ),
                     ),
-                  ),
-                  Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: AppColors.cyanDeep, shape: BoxShape.circle, border: Border.all(color: AppColors.bg, width: 2)), child: const Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white)),
-                ]),
+                    Container(padding: EdgeInsets.all(6), decoration: BoxDecoration(color: AppColors.cyanDeep, shape: BoxShape.circle, border: Border.all(color: AppColors.bg, width: 2)), child: Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white)),
+                  ]),
+                ),
               ),
-            ),
-            Center(child: TextButton(onPressed: _pickPhoto, child: Text('Change Photo', style: AppTypography.interLabel(color: AppColors.cyanDeep)))),
-            const SizedBox(height: 8),
+              Center(child: TextButton(onPressed: _pickPhoto, child: Text('Change Photo', style: AppTypography.interLabel(color: AppColors.cyanDeep)))),
+              const SizedBox(height: 8),
             NeuTextField(label: 'Name', hint: 'Full name', controller: _name),
             const SizedBox(height: 12),
             NeuTextField(label: 'College', hint: 'IIT Delhi', controller: _college),
@@ -304,6 +323,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
           ]),
         ),
       ),
+    ),
     );
   }
 }
