@@ -305,7 +305,7 @@ class _TemplateTile extends StatelessWidget {
         if (isSelected) ...[const SizedBox(height: 4), const NeuChip(label: '✓ Selected')] else if (isPremium) ...[const SizedBox(height: 4), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(6)), child: Text('PRO', style: AppTypography.interBadge(color: AppColors.gold))) ] else ...[const SizedBox(height: 4), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Text('FREE', style: AppTypography.interBadge(color: AppColors.success)))],
       ]),
       if (isLocked)
-        Container(decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.45), borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: const Icon(Icons.lock_rounded, color: Colors.white, size: 22)),
+        Container(decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.45), borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: Icon(Icons.lock_rounded, color: Colors.white, size: 22)),
       if (isPremium && !isLocked)
         const Positioned(top: 6, right: 6, child: PremiumBadge(label: 'PRO', isSmall: true)),
     ]),
