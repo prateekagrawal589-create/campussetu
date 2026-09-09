@@ -13,7 +13,11 @@ const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-  console.error('Unexpected DB pool error:', err);
+  if (err.code === '57P01') {
+    console.warn('DB pool: Neon closed idle connection (57P01) — will reconnect');
+    return;
+  }
+  console.warn('DB pool warning:', err.code, err.message);
 });
 
 module.exports = pool;
