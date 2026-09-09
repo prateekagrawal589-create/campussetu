@@ -14,9 +14,9 @@ class AppTheme {
 
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    final bg = isDark ? const Color(0xFF12141F) : AppColors.bg;
-    final ink = isDark ? const Color(0xFFE9EBEE) : AppColors.ink;
-    final inkSoft = isDark ? const Color(0xFF9CA3AF) : AppColors.inkSoft;
+    final bg = isDark ? Color(0xFF12141F) : AppColors.bg;
+    final ink = isDark ? Color(0xFFE9EBEE) : AppColors.ink;
+    final inkSoft = isDark ? Color(0xFF9CA3AF) : AppColors.inkSoft;
     return ThemeData(
         useMaterial3: true,
         brightness: brightness,
