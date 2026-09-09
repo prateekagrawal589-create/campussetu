@@ -12,11 +12,19 @@ import '../../core/widgets/dark_tile.dart';
 import '../../core/widgets/neu_card.dart';
 import '../../core/widgets/neu_chip.dart';
 import '../../core/widgets/neu_text_field.dart';
+import '../../core/widgets/premium_badge.dart';
 
 class ResumeScreen extends ConsumerStatefulWidget {
   const ResumeScreen({super.key});
   @override
   ConsumerState<ResumeScreen> createState() => _ResumeScreenState();
+}
+
+class _TemplateMeta {
+  final String name;
+  final bool isPremium;
+  final IconData icon;
+  const _TemplateMeta(this.name, this.isPremium, this.icon);
 }
 
 class _ResumeScreenState extends ConsumerState<ResumeScreen> {
@@ -35,6 +43,29 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
   final Map<String, bool> _done = {
     'personal': false, 'education': false, 'experience': false, 'projects': false, 'skills': false, 'achievements': false,
   };
+
+  static const List<_TemplateMeta> _templates = [
+    _TemplateMeta('Modern', false, Icons.article_rounded),
+    _TemplateMeta('Classic', false, Icons.description_rounded),
+    _TemplateMeta('Minimal', false, Icons.text_snippet_rounded),
+    _TemplateMeta('Elegant', false, Icons.auto_awesome_rounded),
+    _TemplateMeta('Professional', false, Icons.work_rounded),
+    _TemplateMeta('Creative', false, Icons.palette_rounded),
+    _TemplateMeta('Standard', false, Icons.assignment_rounded),
+    _TemplateMeta('Basic', false, Icons.note_alt_rounded),
+    _TemplateMeta('Clean', false, Icons.cleaning_services_rounded),
+    _TemplateMeta('Simple', false, Icons.subject_rounded),
+    _TemplateMeta('Executive', true, Icons.business_center_rounded),
+    _TemplateMeta('Luxury', true, Icons.diamond_rounded),
+    _TemplateMeta('Designer', true, Icons.brush_rounded),
+    _TemplateMeta('Corporate', true, Icons.apartment_rounded),
+    _TemplateMeta('Tech', true, Icons.memory_rounded),
+    _TemplateMeta('Artistic', true, Icons.color_lens_rounded),
+    _TemplateMeta('Futuristic', true, Icons.rocket_launch_rounded),
+    _TemplateMeta('Elite', true, Icons.workspace_premium_rounded),
+    _TemplateMeta('Platinum', true, Icons.stars_rounded),
+    _TemplateMeta('Premium', true, Icons.verified_rounded),
+  ];
 
   @override
   void initState() {
@@ -76,8 +107,8 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
     final name = _ctrls['name']!.text.isEmpty ? 'Your Name' : _ctrls['name']!.text;
     final email = _ctrls['email']!.text;
     final phone = _ctrls['phone']!.text;
-    final isModern = _selectedTemplate == 0;
-    final isClassic = _selectedTemplate == 1;
+    final tmpl = _templates[_selectedTemplate];
+    final isModern = tmpl.name == 'Modern' || _selectedTemplate % 2 == 0;
 
     pdf.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
@@ -87,7 +118,9 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
           padding: const pw.EdgeInsets.all(12),
           decoration: isModern ? pw.BoxDecoration(color: PdfColor.fromHex('#1BA8C4'), borderRadius: pw.BorderRadius.circular(6)) : const pw.BoxDecoration(),
           child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-            pw.Text(name, style: pw.TextStyle(fontSize: isClassic ? 22 : 24, fontWeight: pw.FontWeight.bold, color: isModern ? PdfColors.white : PdfColors.black)),
+            pw.Text(name, style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: isModern ? PdfColors.white : PdfColors.black)),
+            pw.SizedBox(height: 2),
+            pw.Text('Template: ${tmpl.name}', style: pw.TextStyle(fontSize: 7, color: isModern ? PdfColors.white : PdfColors.grey600)),
             pw.SizedBox(height: 4),
             pw.Text('$email  ${phone.isNotEmpty ? ' | $phone' : ''}  ${_ctrls['linkedin']!.text}', style: pw.TextStyle(fontSize: 9, color: isModern ? PdfColors.white : PdfColors.grey700)),
           ]),
@@ -133,8 +166,28 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
     );
   }
 
+  void _onTemplateTap(int index, bool isPremiumUser) {
+    final tmpl = _templates[index];
+    if (tmpl.isPremium && !isPremiumUser) {
+      showDialog(context: context, builder: (_) => AlertDialog(
+        backgroundColor: AppColors.bg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(children: [const PremiumBadge(label: 'PRO'), const SizedBox(width: 8), Text('Premium Template', style: AppTypography.soraHeading3())]),
+        content: Text('"${tmpl.name}" is a premium template. Subscribe to unlock all 10 premium designs and build unlimited resumes.', style: AppTypography.interBody(color: AppColors.inkSoft)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Maybe later', style: AppTypography.interLabel())),
+          GestureDetector(onTap: () { Navigator.pop(context); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Premium subscription coming soon!'))); }, child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), decoration: BoxDecoration(gradient: AppColors.cyanGradient, borderRadius: BorderRadius.circular(10)), child: Text('Go Premium', style: AppTypography.interButton(color: Colors.white, size: 13)))),
+        ],
+      ));
+      return;
+    }
+    setState(() => _selectedTemplate = index);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(profileProvider(null)).value;
+    final isPremiumUser = user?.isPremium ?? false;
     final sections = [
       _Section(icon: Icons.person_outline, title: 'Personal Info', subtitle: _ctrls['name']!.text.isEmpty ? 'Add name, email, phone' : _ctrls['name']!.text, done: _done['personal']!, onTap: () => _editSection('personal', 'Personal Info', 'Name, email, phone, LinkedIn', 'name')),
       _Section(icon: Icons.school_outlined, title: 'Education', subtitle: _ctrls['education']!.text.isEmpty ? 'Add education' : '1 entry', done: _done['education']!, onTap: () => _editSection('education', 'Education', 'College, degree, year, CGPA', 'education')),
@@ -150,19 +203,29 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
         children: [
-          Text('Choose Template', style: AppTypography.soraHeading3()),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 160,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: 3,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (_, i) => GestureDetector(
-                onTap: () => setState(() => _selectedTemplate = i),
-                child: _TemplateTile(name: ['Modern','Classic','Minimal'][i], isSelected: _selectedTemplate == i),
-              ),
-            ),
+          Row(children: [
+            Text('Choose Template', style: AppTypography.soraHeading3()),
+            const Spacer(),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Text('10 Free', style: AppTypography.interBadge(color: AppColors.success))),
+            const SizedBox(width: 6),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(8)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.workspace_premium_rounded, size: 10, color: AppColors.gold), const SizedBox(width: 4), Text('10 PRO', style: AppTypography.interBadge(color: AppColors.gold))])),
+          ]),
+          const SizedBox(height: 6),
+          Text('10 simple free for everyone, 10 premium for subscribers', style: AppTypography.interCaption()),
+          const SizedBox(height: 14),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 0.82),
+            itemCount: _templates.length,
+            itemBuilder: (_, i) {
+              final tmpl = _templates[i];
+              final isLocked = tmpl.isPremium && !isPremiumUser;
+              return GestureDetector(
+                onTap: () => _onTemplateTap(i, isPremiumUser),
+                child: _TemplateTile(name: tmpl.name, icon: tmpl.icon, isSelected: _selectedTemplate == i, isPremium: tmpl.isPremium, isLocked: isLocked),
+              );
+            },
           ),
           const SizedBox(height: 24),
           Text('Resume Sections', style: AppTypography.soraHeading3()),
@@ -177,6 +240,8 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
               ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: _ats / 100, minHeight: 8, color: AppColors.cyan, backgroundColor: AppColors.cyanDeep.withOpacity(0.2))),
               const SizedBox(height: 12),
               Text(_ats < 70 ? 'Add Experience and Projects to improve your score' : 'Great! Your resume is ready to export', style: AppTypography.interBodySmall(color: AppColors.inkSoft)),
+              const SizedBox(height: 8),
+              Text('Selected: ${_templates[_selectedTemplate].name} ${_templates[_selectedTemplate].isPremium ? '(PRO)' : '(Free)'}', style: AppTypography.interCaption(color: AppColors.cyan)),
             ]),
           ),
           const SizedBox(height: 24),
@@ -224,12 +289,25 @@ class _SectionCard extends StatelessWidget {
 
 class _TemplateTile extends StatelessWidget {
   final String name;
+  final IconData icon;
   final bool isSelected;
-  const _TemplateTile({required this.name, this.isSelected = false});
+  final bool isPremium;
+  final bool isLocked;
+  const _TemplateTile({required this.name, required this.icon, this.isSelected = false, this.isPremium = false, this.isLocked = false});
   @override
   Widget build(BuildContext context) => Container(
-    width: 110,
     decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), boxShadow: isSelected ? AppColors.cyanGlowShadows : AppColors.neuRaisedShadows, border: isSelected ? Border.all(color: AppColors.cyan, width: 2) : null, color: AppColors.bg),
-    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.article_rounded, size: 40, color: isSelected ? AppColors.cyanDeep : AppColors.inkSoft), const SizedBox(height: 8), Text(name, style: AppTypography.interButton(color: isSelected ? AppColors.cyanDeep : AppColors.ink, size: 13)), if (isSelected) ...[const SizedBox(height: 4), const NeuChip(label: '✓ Selected')]]),
+    child: Stack(children: [
+      Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(icon, size: 32, color: isLocked ? AppColors.inkMuted : (isSelected ? AppColors.cyanDeep : AppColors.inkSoft)),
+        const SizedBox(height: 6),
+        Text(name, style: AppTypography.interButton(color: isLocked ? AppColors.inkMuted : (isSelected ? AppColors.cyanDeep : AppColors.ink), size: 11), textAlign: TextAlign.center),
+        if (isSelected) ...[const SizedBox(height: 4), const NeuChip(label: '✓ Selected')] else if (isPremium) ...[const SizedBox(height: 4), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(6)), child: Text('PRO', style: AppTypography.interBadge(color: AppColors.gold))) ] else ...[const SizedBox(height: 4), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Text('FREE', style: AppTypography.interBadge(color: AppColors.success)))],
+      ]),
+      if (isLocked)
+        Container(decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.45), borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: const Icon(Icons.lock_rounded, color: Colors.white, size: 22)),
+      if (isPremium && !isLocked)
+        const Positioned(top: 6, right: 6, child: PremiumBadge(label: 'PRO', isSmall: true)),
+    ]),
   );
 }
