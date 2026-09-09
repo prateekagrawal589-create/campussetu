@@ -60,7 +60,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                 final q = _searchCtrl.text.toLowerCase();
                 if (q.isNotEmpty) filtered = jobs.where((j) => (j['title'] as String? ?? '').toLowerCase().contains(q) || (j['company'] as String? ?? '').toLowerCase().contains(q)).toList();
                 if (filtered.isEmpty) {
-                  return Center(child: Padding(padding: const EdgeInsets.all(32), child: NeuCard(padding: const EdgeInsets.all(24), child: Column(children: [Icon(Icons.work_outline, size: 40, color: AppColors.inkSoft), const SizedBox(height: 12), Text('No opportunities found', style: AppTypography.soraHeading3()), Text('Try different filters', style: AppTypography.interCaption())]))));
+                  return Center(child: Padding(padding: EdgeInsets.all(32), child: NeuCard(padding: EdgeInsets.all(24), child: Column(children: [Icon(Icons.work_outline, size: 40, color: AppColors.inkSoft), SizedBox(height: 12), Text('No opportunities found', style: AppTypography.soraHeading3()), Text('Try different filters', style: AppTypography.interCaption())]))));
                 }
                 return RefreshIndicator(
                   onRefresh: () async => ref.invalidate(jobsProvider(filter)),
@@ -111,7 +111,7 @@ class _JobCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(company, style: AppTypography.interBody(color: Colors.white70)),
             const SizedBox(height: 8),
-            Row(children: [Icon(Icons.location_on_outlined, size: 14, color: AppColors.inkSoft), const SizedBox(width: 4), Text(location, style: AppTypography.interCaption(color: AppColors.inkSoft)), const Spacer(), if (stipend.isNotEmpty) GlowText(stipend, style: AppTypography.monoCode(size: 13, color: AppColors.cyan))]),
+            Row(children: [Icon(Icons.location_on_outlined, size: 14, color: AppColors.inkSoft), SizedBox(width: 4), Text(location, style: AppTypography.interCaption(color: AppColors.inkSoft)), Spacer(), if (stipend.isNotEmpty) GlowText(stipend, style: AppTypography.monoCode(size: 13, color: AppColors.cyan))]),
           ]),
         ),
       );
