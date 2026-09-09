@@ -28,9 +28,9 @@ class UpdateInfo {
 }
 
 class UpdateService {
-  static const String githubRepo = 'YOUR_GITHUB_USERNAME/campussetu';
-  static const String githubApi = 'https://api.github.com/repos/YOUR_GITHUB_USERNAME/campussetu/releases/latest';
-  static const String fallbackVersionUrl = 'https://campussetu-backend.onrender.com/health';
+  static const String githubRepo = 'prateek155/campussetu';
+  static const String githubApi = 'https://api.github.com/repos/prateek155/campussetu/releases/latest';
+  static const String fallbackVersionUrl = 'https://campussetu-production.up.railway.app/api/v1/version';
 
   static final Dio _dio = Dio();
 
