@@ -55,6 +55,12 @@ app.use('/api/v1/admin', adminRouter);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', ts: new Date().toISOString(), env: process.env.NODE_ENV });
 });
+app.get('/api/v1/health', (req, res) => {
+  res.json({ status: 'ok', ts: new Date().toISOString(), env: process.env.NODE_ENV });
+});
+app.get('/api/v1/chats', (req, res) => {
+  res.json([]);
+});
 
 // ── 404 handler ────────────────────────────────────────────
 app.use((req, res) => {
