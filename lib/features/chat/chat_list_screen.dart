@@ -89,7 +89,7 @@ class _ThreadCard extends StatelessWidget {
           child: Row(children: [
             UserAvatar(name: name, size: 50),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(name, style: AppTypography.interButton(color: AppColors.ink, size: 14)), const SizedBox(height: 3), Text(lastMessage, style: AppTypography.interBodySmall(color: unread > 0 ? AppColors.ink : AppColors.inkSoft).copyWith(fontWeight: unread > 0 ? FontWeight.w500 : FontWeight.w400), overflow: TextOverflow.ellipsis)])),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(name, style: AppTypography.interButton(color: AppColors.ink, size: 14)), SizedBox(height: 3), Text(lastMessage, style: AppTypography.interBodySmall(color: unread > 0 ? AppColors.ink : AppColors.inkSoft).copyWith(fontWeight: unread > 0 ? FontWeight.w500 : FontWeight.w400), overflow: TextOverflow.ellipsis)])),
             const SizedBox(width: 8),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Text(time, style: AppTypography.monoTimestamp()),
