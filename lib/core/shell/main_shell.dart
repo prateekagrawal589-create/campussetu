@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../providers/app_providers.dart';
 import '../services/update_service.dart';
 import '../theme/app_colors.dart';
@@ -68,18 +69,7 @@ class MainShell extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Expanded(child: Text('Update v${updateInfo!.latestVersion} available', style: AppTypography.interButton(color: Colors.white, size: 12))),
                 GestureDetector(
-                  onTap: () async {
-                    try {
-                      if (updateInfo.latestVersion == 'PlayStore') {
-                        await UpdateService.performPlayStoreUpdate();
-                      } else if (updateInfo.apkUrl != null) {
-                        final path = await UpdateService.downloadApk(updateInfo.apkUrl!);
-                        await UpdateService.installApk(path);
-                      }
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Update failed: $e')));
-                    }
-                  },
+                  onTap: () => showDialog(context: context, barrierDismissible: false, builder: (_) => _UpdateProgressDialog(info: updateInfo!)),
                   child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)), child: Text('Update', style: AppTypography.interButton(color: AppColors.cyanDeep, size: 12))),
                 ),
               ]),
@@ -95,4 +85,72 @@ class MainShell extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _UpdateProgressDialog extends StatefulWidget {
+  final UpdateInfo info;
+  const _UpdateProgressDialog({required this.info});
+  @override
+  State<_UpdateProgressDialog> createState() => _UpdateProgressDialogState();
+}
+
+class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
+  double _progress = 0;
+  String _status = 'Starting download...';
+  bool _failed = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _start();
+  }
+
+  Future<void> _start() async {
+    try {
+      setState(() { _status = 'Downloading v${widget.info.latestVersion}...'; });
+      final path = await UpdateService.downloadApk(widget.info.apkUrl!, onProgress: (r, t) {
+        if (t > 0 && mounted) setState(() { _progress = r / t; _status = '${(_progress * 100).toInt()}% downloaded'; });
+      });
+      if (!mounted) return;
+      setState(() { _status = 'Download complete, installing...'; });
+      await UpdateService.installApk(path);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() { _failed = true; _error = e.toString(); _status = 'Failed'; });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    backgroundColor: AppColors.bg,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    title: Text(_failed ? 'Update failed' : 'Updating...', style: AppTypography.soraHeading3()),
+    content: Column(mainAxisSize: MainAxisSize.min, children: [
+      if (!_failed) ...[
+        LinearProgressIndicator(value: _progress == 0 ? null : _progress, color: AppColors.cyanDeep, backgroundColor: AppColors.shadowDark.withOpacity(0.2)),
+        const SizedBox(height: 12),
+        Text(_status, style: AppTypography.interCaption(), textAlign: TextAlign.center),
+        const SizedBox(height: 8),
+        Text('Please keep app open. You may need to allow "Install unknown apps" when prompted.', style: AppTypography.interCaption(color: AppColors.inkSoft), textAlign: TextAlign.center),
+      ] else ...[
+        Icon(Icons.error_outline_rounded, color: AppColors.error, size: 32),
+        const SizedBox(height: 8),
+        Text(_error ?? 'Unknown error', style: AppTypography.interBody(color: AppColors.error, size: 13), textAlign: TextAlign.center),
+        const SizedBox(height: 8),
+        Text('Try again or download manually from GitHub Releases.', style: AppTypography.interCaption(), textAlign: TextAlign.center),
+      ],
+    ]),
+    actions: _failed
+        ? [
+            TextButton(onPressed: () => Navigator.pop(context), child: Text('Close', style: AppTypography.interButton(color: AppColors.inkSoft))),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.cyanDeep),
+              onPressed: () { Navigator.pop(context); if (_error != null && _error!.contains('Install unknown apps')) { openAppSettings(); } },
+              child: Text(_error != null && _error!.contains('Install unknown apps') ? 'Open Settings' : 'Retry', style: AppTypography.interButton(color: Colors.white, size: 13)),
+            ),
+          ]
+        : [TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: AppTypography.interCaption()))],
+  );
 }
