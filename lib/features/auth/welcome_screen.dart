@@ -169,8 +169,8 @@ class _BrandOrbState extends State<_BrandOrb> with SingleTickerProviderStateMixi
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
-              BoxShadow(color: AppColors.shadowDark, offset: const Offset(12, 12), blurRadius: 24),
-              BoxShadow(color: AppColors.shadowLight, offset: const Offset(-12, -12), blurRadius: 24),
+              BoxShadow(color: AppColors.shadowDark, offset: Offset(12, 12), blurRadius: 24),
+              BoxShadow(color: AppColors.shadowLight, offset: Offset(-12, -12), blurRadius: 24),
             ],
             color: AppColors.bg,
           ),
