@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
   bio              TEXT CHECK (char_length(bio) <= 300),
   skills           TEXT[]      DEFAULT '{}',
   profile_complete BOOLEAN     DEFAULT false,
+  campus_id        TEXT UNIQUE,
   is_verified      BOOLEAN     DEFAULT false,
   is_premium       BOOLEAN     DEFAULT false,
   is_banned        BOOLEAN     DEFAULT false,
@@ -209,3 +210,60 @@ CREATE TABLE IF NOT EXISTS startup_members (
   joined_at  TIMESTAMPTZ DEFAULT NOW(),
   PRIMARY KEY (startup_id, user_id)
 );
+
+-- ─────────────────────────────────────────────────────────
+-- HELPING HAND (Paid / Points tasks)
+-- ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS helping_tasks (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title       TEXT NOT NULL CHECK (char_length(title) BETWEEN 3 AND 120),
+  description TEXT NOT NULL CHECK (char_length(description) BETWEEN 5 AND 2000),
+  image_url   TEXT,
+  type        TEXT NOT NULL CHECK (type IN ('paid','points')),
+  amount      NUMERIC(10,2),
+  points      INT,
+  deadline    DATE,
+  poster_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status      TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','assigned','completed','cancelled','on_hold')),
+  assignee_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  expires_at  TIMESTAMPTZ DEFAULT NOW() + INTERVAL '7 days',
+  CONSTRAINT helping_paid_check CHECK (
+    (type = 'paid' AND amount IS NOT NULL AND amount > 0) OR
+    (type = 'points' AND points IS NOT NULL AND points > 0)
+  )
+);
+
+CREATE INDEX IF NOT EXISTS idx_helping_type_status ON helping_tasks (type, status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_helping_poster ON helping_tasks (poster_id);
+
+CREATE TABLE IF NOT EXISTS helping_applications (
+  id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  task_id      UUID NOT NULL REFERENCES helping_tasks(id) ON DELETE CASCADE,
+  applicant_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status       TEXT NOT NULL DEFAULT 'applied' CHECK (status IN ('applied','accepted','rejected')),
+  created_at   TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (task_id, applicant_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_helping_apps_task ON helping_applications (task_id, status);
+
+-- ── Migration for existing DBs: 7-day auto-hold + delete support ──
+ALTER TABLE IF EXISTS helping_tasks ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ DEFAULT NOW() + INTERVAL '7 days';
+UPDATE helping_tasks SET expires_at = created_at + INTERVAL '7 days' WHERE expires_at IS NULL;
+ALTER TABLE IF EXISTS helping_tasks DROP CONSTRAINT IF EXISTS helping_tasks_status_check;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'helping_tasks_status_hold_check') THEN
+    ALTER TABLE helping_tasks ADD CONSTRAINT helping_tasks_status_hold_check CHECK (status IN ('open','assigned','completed','cancelled','on_hold'));
+  END IF;
+END $$;
+UPDATE helping_tasks SET status = 'on_hold' WHERE status = 'open' AND COALESCE(expires_at, created_at + INTERVAL '7 days') <= NOW();
+CREATE INDEX IF NOT EXISTS idx_helping_expires ON helping_tasks (expires_at, status);
+
+-- ── Migration: Campus ID for points transfer + identity card ──
+ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS campus_id TEXT UNIQUE;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_campus_id ON users (campus_id);
+
+-- ── Anti-abuse: signup bonus once per user, like-milestone once per level ──
+CREATE UNIQUE INDEX IF NOT EXISTS uq_points_signup_once ON points_ledger (user_id) WHERE reason = 'signup_bonus';
+CREATE UNIQUE INDEX IF NOT EXISTS uq_points_milestone_once ON points_ledger (user_id, reason) WHERE reason LIKE 'post_like_milestone:%';
