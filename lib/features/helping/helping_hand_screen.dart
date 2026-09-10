@@ -52,8 +52,8 @@ class _HelpingHandScreenState extends ConsumerState<HelpingHandScreen> {
                 meAsync.when(
                   data: (u) => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
-                    child: Row(children: [Icon(Icons.stars_rounded, size: 16, color: AppColors.warning), const SizedBox(width: 4), Text('${u.points} pts', style: AppTypography.interButton(color: AppColors.warning, size: 13))]),
+                    decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+                    child: Row(children: [const Icon(Icons.stars_rounded, size: 16, color: AppColors.warning), const SizedBox(width: 4), Text('${u.points} pts', style: AppTypography.interButton(color: AppColors.warning, size: 13))]),
                   ),
                   loading: () => const SizedBox.shrink(),
                   error: (_, __) => const SizedBox.shrink(),
@@ -98,7 +98,7 @@ class _HelpingHandScreenState extends ConsumerState<HelpingHandScreen> {
           final created = await showModalBottomSheet<bool>(context: context, backgroundColor: Colors.transparent, isScrollControlled: true, builder: (_) => const CreateHelpingTaskSheet());
           if (created == true) { ref.invalidate(helpingTasksProvider(filter)); ref.invalidate(currentUserProvider); }
         },
-        icon: Icon(Icons.add_rounded, color: Colors.white),
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: Text('Post Task', style: AppTypography.interButton(color: Colors.white)),
       ),
     );
@@ -150,13 +150,13 @@ class _TaskCard extends ConsumerWidget {
         onTap: () => context.push('${AppRoutes.helping}/${task.id}'),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)), child: Text(isPaid ? '💰 Paid' : '⭐ Points', style: AppTypography.interBadge(color: color))),
-            if (task.isOnHold) ...[const SizedBox(width: 6), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: AppColors.inkSoft.withOpacity(0.15), borderRadius: BorderRadius.circular(8)), child: Text('⏸ ON HOLD', style: AppTypography.interBadge(color: AppColors.inkSoft)))],
+            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)), child: Text(isPaid ? '💰 Paid' : '⭐ Points', style: AppTypography.interBadge(color: color))),
+            if (task.isOnHold) ...[const SizedBox(width: 6), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: AppColors.inkSoft.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)), child: Text('⏸ ON HOLD', style: AppTypography.interBadge(color: AppColors.inkSoft)))],
             const Spacer(),
             if (isMine)
-              GestureDetector(onTap: () => _delete(context, ref), child: Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error))),
+              GestureDetector(onTap: () => _delete(context, ref), child: Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error))),
             if (isMine) const SizedBox(width: 6),
-            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.06), borderRadius: BorderRadius.circular(8)), child: Text(task.rewardLabel, style: AppTypography.monoCode(size: 13, weight: FontWeight.w700, color: AppColors.ink))),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: AppColors.ink.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(8)), child: Text(task.rewardLabel, style: AppTypography.monoCode(size: 13, weight: FontWeight.w700, color: AppColors.ink))),
           ]),
           const SizedBox(height: 10),
           Text(task.title, style: AppTypography.interButton(color: AppColors.ink, size: 15), maxLines: 2, overflow: TextOverflow.ellipsis),
@@ -171,16 +171,16 @@ class _TaskCard extends ConsumerWidget {
           ]),
           if (task.imageUrl != null && task.imageUrl!.isNotEmpty) ...[
             const SizedBox(height: 10),
-            ClipRRect(borderRadius: BorderRadius.circular(12), child: CachedNetworkImage(imageUrl: task.imageUrl!, height: 140, width: double.infinity, fit: BoxFit.cover, placeholder: (_, __) => Container(height: 140, color: AppColors.shadowDark.withOpacity(0.15)), errorWidget: (_, __, ___) => const SizedBox.shrink())),
+            ClipRRect(borderRadius: BorderRadius.circular(12), child: CachedNetworkImage(imageUrl: task.imageUrl!, height: 140, width: double.infinity, fit: BoxFit.cover, placeholder: (_, __) => Container(height: 140, color: AppColors.shadowDark.withValues(alpha: 0.15)), errorWidget: (_, __, ___) => const SizedBox.shrink())),
           ],
           const SizedBox(height: 10),
           Row(children: [
             if (posterName.isNotEmpty) ...[Icon(Icons.person_outline, size: 13, color: AppColors.inkSoft), const SizedBox(width: 4), Expanded(child: Text(posterName, style: AppTypography.interCaption(), overflow: TextOverflow.ellipsis))],
-            if (task.deadline != null && task.deadline!.isNotEmpty) ...[Icon(Icons.event_outlined, size: 13, color: AppColors.error), const SizedBox(width: 4), Text(task.deadline!.split('T').first, style: AppTypography.interCaption(color: AppColors.error))],
+            if (task.deadline != null && task.deadline!.isNotEmpty) ...[const Icon(Icons.event_outlined, size: 13, color: AppColors.error), const SizedBox(width: 4), Text(task.deadline!.split('T').first, style: AppTypography.interCaption(color: AppColors.error))],
             const Spacer(),
             if (task.applicationsCount > 0) Text('${task.applicationsCount} applied', style: AppTypography.interBadge(color: AppColors.cyanDeep)),
             const SizedBox(width: 8),
-            Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: BoxDecoration(gradient: task.isOnHold ? null : AppColors.cyanGradient, color: task.isOnHold ? AppColors.shadowDark.withOpacity(0.4) : null, borderRadius: BorderRadius.circular(9)), child: Text(task.isOnHold ? 'On Hold' : 'Open →', style: AppTypography.interButton(color: Colors.white, size: 12))),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: BoxDecoration(gradient: task.isOnHold ? null : AppColors.cyanGradient, color: task.isOnHold ? AppColors.shadowDark.withValues(alpha: 0.4) : null, borderRadius: BorderRadius.circular(9)), child: Text(task.isOnHold ? 'On Hold' : 'Open →', style: AppTypography.interButton(color: Colors.white, size: 12))),
           ]),
         ]),
       ),
