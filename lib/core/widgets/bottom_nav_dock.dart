@@ -132,7 +132,7 @@ class _NavDockItemState extends State<_NavDockItem> with SingleTickerProviderSta
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: widget.isActive ? AppColors.cyanDeep.withOpacity(0.12) : Colors.transparent,
+                      color: widget.isActive ? AppColors.cyanDeep.withValues(alpha: 0.12) : Colors.transparent,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(widget.isActive ? widget.item.activeIcon : widget.item.icon, color: widget.isActive ? AppColors.cyanDeep : AppColors.inkSoft, size: 22),
