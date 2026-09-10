@@ -115,7 +115,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
             final q = _searchCtrl.text.toLowerCase();
             if (q.isNotEmpty) filtered = jobs.where((j) => (j['title'] as String? ?? '').toLowerCase().contains(q) || (j['company'] as String? ?? '').toLowerCase().contains(q)).toList();
             if (filtered.isEmpty) {
-              return Center(child: Padding(padding: EdgeInsets.all(32), child: NeuCard(padding: EdgeInsets.all(24), child: Column(children: [Icon(Icons.work_outline, size: 40, color: AppColors.inkSoft), SizedBox(height: 12), Text('No opportunities found', style: AppTypography.soraHeading3()), Text('Try different filters', style: AppTypography.interCaption())]))));
+              return Center(child: Padding(padding: const EdgeInsets.all(32), child: NeuCard(padding: const EdgeInsets.all(24), child: Column(children: [Icon(Icons.work_outline, size: 40, color: AppColors.inkSoft), const SizedBox(height: 12), Text('No opportunities found', style: AppTypography.soraHeading3()), Text('Try different filters', style: AppTypography.interCaption())]))));
             }
             return RefreshIndicator(
               onRefresh: () async => ref.invalidate(jobsProvider(filter)),
@@ -150,7 +150,7 @@ class _SegmentBtn extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: selected ? AppColors.cyanGradient : null,
           borderRadius: BorderRadius.circular(14),
-          boxShadow: selected ? [BoxShadow(color: AppColors.cyanDeep.withOpacity(0.35), blurRadius: 12, offset: const Offset(0, 4))] : null,
+          boxShadow: selected ? [BoxShadow(color: AppColors.cyanDeep.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 4))] : null,
         ),
         alignment: Alignment.center,
         child: Text(
@@ -186,13 +186,13 @@ class _JobCard extends StatelessWidget {
           padding: const EdgeInsets.all(18),
           onTap: () { if (applyLink.isNotEmpty) launchUrl(Uri.parse(applyLink)); },
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.2), borderRadius: BorderRadius.circular(6)), child: Text('⭐ Featured', style: AppTypography.interBadge(color: AppColors.warning))), const Spacer(), Text(type, style: AppTypography.interBadge(color: AppColors.cyan))]),
+            Row(children: [Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(6)), child: Text('⭐ Featured', style: AppTypography.interBadge(color: AppColors.warning))), const Spacer(), Text(type, style: AppTypography.interBadge(color: AppColors.cyan))]),
             const SizedBox(height: 12),
             GlowText(title, style: AppTypography.soraHeading3(color: AppColors.cyan)),
             const SizedBox(height: 4),
             Text(company, style: AppTypography.interBody(color: Colors.white70)),
             const SizedBox(height: 8),
-            Row(children: [Icon(Icons.location_on_outlined, size: 14, color: AppColors.inkSoft), SizedBox(width: 4), Text(location, style: AppTypography.interCaption(color: AppColors.inkSoft)), Spacer(), if (stipend.isNotEmpty) GlowText(stipend, style: AppTypography.monoCode(size: 13, color: AppColors.cyan))]),
+            Row(children: [Icon(Icons.location_on_outlined, size: 14, color: AppColors.inkSoft), const SizedBox(width: 4), Text(location, style: AppTypography.interCaption(color: AppColors.inkSoft)), const Spacer(), if (stipend.isNotEmpty) GlowText(stipend, style: AppTypography.monoCode(size: 13, color: AppColors.cyan))]),
           ]),
         ),
       );
@@ -205,17 +205,17 @@ class _JobCard extends StatelessWidget {
         onTap: () { if (applyLink.isNotEmpty) launchUrl(Uri.parse(applyLink)); },
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Container(width: 44, height: 44, decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)), child: Center(child: Text(company.isNotEmpty ? company[0].toUpperCase() : '?', style: AppTypography.soraHeading3(color: color)))),
+            Container(width: 44, height: 44, decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)), child: Center(child: Text(company.isNotEmpty ? company[0].toUpperCase() : '?', style: AppTypography.soraHeading3(color: color)))),
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: AppTypography.interButton(color: AppColors.ink, size: 14)), Text(company, style: AppTypography.interCaption())])),
-            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Text(type, style: AppTypography.interBadge(color: color))),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: Text(type, style: AppTypography.interBadge(color: color))),
           ]),
           const SizedBox(height: 12),
           Row(children: [
             Icon(Icons.location_on_outlined, size: 13, color: AppColors.inkSoft),
             const SizedBox(width: 4),
             Text(location, style: AppTypography.interCaption()),
-            if (isRemote) ...[const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2), decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Text('Remote', style: AppTypography.interBadge(color: AppColors.success)))],
+            if (isRemote) ...[const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2), decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)), child: Text('Remote', style: AppTypography.interBadge(color: AppColors.success)))],
             const Spacer(),
             if (stipend.isNotEmpty && stipend != location) Text(stipend, style: AppTypography.monoCode(size: 13, color: AppColors.ink, weight: FontWeight.w600)),
           ]),
