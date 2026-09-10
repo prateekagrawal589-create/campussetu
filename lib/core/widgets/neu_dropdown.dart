@@ -35,7 +35,7 @@ class NeuDropdown<T> extends StatelessWidget {
             boxShadow: AppColors.neuInsetShadows,
           ),
           child: DropdownButtonFormField<T>(
-            value: value,
+            initialValue: value,
             items: items,
             onChanged: onChanged,
             hint: Text(hint, style: AppTypography.interBody(color: AppColors.inkMuted)),
