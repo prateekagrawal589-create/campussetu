@@ -7,8 +7,6 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/widgets/neu_card.dart';
-import '../../core/widgets/neu_text_field.dart';
 import '../../core/widgets/user_avatar.dart';
 import '../../core/router/app_router.dart';
 
@@ -64,7 +62,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> with SingleTicker
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: Row(children: [
-              UserAvatar(name: 'You', size: 36),
+              const UserAvatar(name: 'You', size: 36),
               const SizedBox(width: 10),
               Expanded(
                 child: Container(
@@ -84,7 +82,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> with SingleTicker
                 ),
               ),
               const SizedBox(width: 10),
-              Container(width: 36, height: 36, decoration: BoxDecoration(color: AppColors.cyanDeep.withOpacity(0.12), shape: BoxShape.circle), child: IconButton(icon: const Icon(Icons.chat_bubble_rounded, size: 16, color: AppColors.cyanDeep), onPressed: () => context.go(AppRoutes.chat))),
+              Container(width: 36, height: 36, decoration: BoxDecoration(color: AppColors.cyanDeep.withValues(alpha: 0.12), shape: BoxShape.circle), child: IconButton(icon: const Icon(Icons.chat_bubble_rounded, size: 16, color: AppColors.cyanDeep), onPressed: () => context.go(AppRoutes.chat))),
             ]),
           ),
           const SizedBox(height: 8),
