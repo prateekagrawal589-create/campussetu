@@ -16,8 +16,8 @@ import '../../features/chat/chat_list_screen.dart';
 import '../../features/chat/chat_detail_screen.dart';
 import '../../features/tshare/tshare_screen.dart';
 import '../../features/jobs/jobs_screen.dart';
-import '../../features/helping/helping_hand_screen.dart';
 import '../../features/helping/helping_task_detail_screen.dart';
+import '../../features/points/transfer_points_screen.dart';
 import '../../features/products/products_screen.dart';
 import '../../features/products/product_detail_screen.dart';
 import '../../features/resume/resume_screen.dart';
@@ -52,6 +52,7 @@ class AppRoutes {
   static const privacy = '/privacy';
   static const terms = '/terms';
   static const notifications = '/notifications';
+  static const pointsTransfer = '/points-transfer';
   static const invitations = '/connect/invitations';
   static const manageNetwork = '/connect/manage';
   static const connections = '/connect/connections';
@@ -104,9 +105,19 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (_, state) => ChatDetailScreen(chatId: state.pathParameters['chatId']!),
           ),
           GoRoute(path: AppRoutes.tshare, builder: (_, __) => const TshareScreen()),
-          GoRoute(path: AppRoutes.jobs, builder: (_, __) => const JobsScreen()),
-          GoRoute(path: AppRoutes.helping, builder: (_, __) => const HelpingHandScreen()),
+          GoRoute(
+            path: AppRoutes.jobs,
+            builder: (_, state) => JobsScreen(initialTab: state.uri.queryParameters['tab'] == 'helping' ? 1 : 0),
+          ),
+          GoRoute(path: AppRoutes.helping, builder: (_, __) => const JobsScreen(initialTab: 1)),
           GoRoute(path: AppRoutes.helpingDetail, builder: (_, state) => HelpingTaskDetailScreen(taskId: state.pathParameters['taskId']!)),
+          GoRoute(
+            path: AppRoutes.pointsTransfer,
+            builder: (_, state) {
+              final extra = state.extra as Map<String, dynamic>?;
+              return TransferPointsScreen(toCampusId: extra?['toCampusId']?.toString(), toName: extra?['toName']?.toString());
+            },
+          ),
           GoRoute(path: AppRoutes.products, builder: (_, __) => const ProductsScreen()),
           GoRoute(
             path: AppRoutes.productDetail,
