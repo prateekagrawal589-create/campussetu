@@ -50,7 +50,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
     final confirm = await showDialog<bool>(context: context, builder: (_) => AlertDialog(
       title: Text('Remove connection?', style: AppTypography.soraHeading3()),
       content: Text('They will not be notified. You can connect again later.', style: AppTypography.interBody(color: AppColors.inkSoft)),
-      actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, true), child: Text('Remove', style: TextStyle(color: AppColors.error)))],
+      actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Remove', style: TextStyle(color: AppColors.error)))],
     ));
     if (confirm != true) return;
     try {
@@ -161,7 +161,7 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          ListTile(leading: const Icon(Icons.person_remove_rounded, color: AppColors.error), title: Text('Remove connection', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600)), onTap: () { Navigator.pop(context); _remove(id); }),
+          ListTile(leading: const Icon(Icons.person_remove_rounded, color: AppColors.error), title: const Text('Remove connection', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600)), onTap: () { Navigator.pop(context); _remove(id); }),
           ListTile(leading: const Icon(Icons.block_rounded, color: Color(0xFF6B7280)), title: const Text('Block'), onTap: () => Navigator.pop(context)),
           const SizedBox(height: 8),
         ]),
