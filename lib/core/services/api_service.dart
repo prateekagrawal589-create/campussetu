@@ -23,26 +23,30 @@ class ApiService {
         if (kDebugMode) debugPrint('← ${response.statusCode} ${response.requestOptions.path}');
         handler.next(response);
       },
-      onError: (error, handler) async {
+      onError: (error, handler) {
         if (kDebugMode) debugPrint('✕ API Error: ${error.message}');
-        final opts = error.requestOptions;
-        final retries = opts.extra['retries'] ?? 0;
-        final shouldRetry = (error.type == DioExceptionType.connectionTimeout ||
-            error.type == DioExceptionType.receiveTimeout ||
-            error.response?.statusCode == 502 ||
-            error.response?.statusCode == 503) && retries < 1;
-        if (shouldRetry) {
-          opts.extra['retries'] = retries + 1;
-          await Future.delayed(const Duration(milliseconds: 700));
-          try {
-            final res = await _dio.fetch(opts);
-            handler.resolve(res);
-            return;
-          } catch (_) {}
-        }
-        handler.next(error);
+        _retryOnce(error, handler);
       },
     ));
+  }
+
+  Future<void> _retryOnce(DioException error, ErrorInterceptorHandler handler) async {
+    final opts = error.requestOptions;
+    final retries = opts.extra['retries'] ?? 0;
+    final shouldRetry = (error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.response?.statusCode == 502 ||
+        error.response?.statusCode == 503) && retries < 1;
+    if (shouldRetry) {
+      opts.extra['retries'] = retries + 1;
+      await Future.delayed(const Duration(milliseconds: 700));
+      try {
+        final res = await _dio.fetch(opts);
+        handler.resolve(res);
+        return;
+      } catch (_) {}
+    }
+    handler.next(error);
   }
 
   static const String _baseUrl = 'https://campussetu-production.up.railway.app/api/v1';
@@ -276,5 +280,19 @@ class ApiService {
 
   Future<void> deleteHelpingTask(String id) async {
     await _dio.delete('/helping/$id');
+  }
+
+  Future<Map<String, dynamic>> getUserByCampusId(String campusId) async {
+    final res = await _dio.get('/users/by-campus/$campusId');
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> transferPoints({required String toCampusId, required int amount}) async {
+    final res = await _dio.post(
+      '/users/transfer',
+      data: {'to_campus_id': toCampusId, 'amount': amount},
+      options: Options(extra: {'retries': 1}),
+    );
+    return res.data as Map<String, dynamic>;
   }
 }
