@@ -84,9 +84,12 @@ app.use((err, req, res, next) => {
 });
 
 // ── Safety: ensure like/comment tables exist (older DBs) ────
+// Retries with backoff: Neon cold-start often drops the first connection.
 (async () => {
+  const db = require('./config/db');
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  for (let attempt = 1; attempt <= 5; attempt++) {
   try {
-    const db = require('./config/db');
     await db.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
     await db.query(`CREATE TABLE IF NOT EXISTS post_likes (
       post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
@@ -105,7 +108,13 @@ app.use((err, req, res, next) => {
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS campus_id TEXT UNIQUE`);
     await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uq_points_signup_once ON points_ledger (user_id) WHERE reason = 'signup_bonus'`);
     await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uq_points_milestone_once ON points_ledger (user_id, reason) WHERE reason LIKE 'post_like_milestone:%'`);
-  } catch (e) { console.warn('Table ensure warning:', e.message); }
+    console.log('✅  DB tables ensured');
+    return;
+  } catch (e) {
+    console.warn(`Table ensure attempt ${attempt}/5 failed:`, e.message);
+    if (attempt < 5) await sleep(attempt * 3000);
+  }
+  }
 })();
 
 // ── Start ──────────────────────────────────────────────────
