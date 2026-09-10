@@ -19,7 +19,7 @@ class MainShell extends ConsumerWidget {
     NavItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
     NavItem(icon: Icons.people_outline, activeIcon: Icons.people_rounded, label: 'Connect'),
     NavItem(icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble_rounded, label: 'Chat'),
-    NavItem(icon: Icons.work_outline, activeIcon: Icons.work_rounded, label: 'Jobs'),
+    NavItem(icon: Icons.work_outline, activeIcon: Icons.work_rounded, label: 'Work'),
     NavItem(icon: Icons.person_outline, activeIcon: Icons.person_rounded, label: 'Profile'),
   ];
 
@@ -33,6 +33,7 @@ class MainShell extends ConsumerWidget {
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
+    if (location.startsWith(AppRoutes.helping)) return 3;
     for (int i = 0; i < _routes.length; i++) {
       if (location.startsWith(_routes[i].split('/:').first)) return i;
     }
@@ -57,7 +58,7 @@ class MainShell extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: Column(children: [
-        if (hasUpdate)
+        if (hasUpdate && updateInfo != null)
           Container(
             width: double.infinity,
             color: AppColors.cyanDeep,
@@ -67,9 +68,9 @@ class MainShell extends ConsumerWidget {
               child: Row(children: [
                 const Icon(Icons.system_update_rounded, color: Colors.white, size: 16),
                 const SizedBox(width: 8),
-                Expanded(child: Text('Update v${updateInfo!.latestVersion} available', style: AppTypography.interButton(color: Colors.white, size: 12))),
+                Expanded(child: Text('Update v${updateInfo.latestVersion} available', style: AppTypography.interButton(color: Colors.white, size: 12))),
                 GestureDetector(
-                  onTap: () => showDialog(context: context, barrierDismissible: false, builder: (_) => _UpdateProgressDialog(info: updateInfo!)),
+                  onTap: () => showDialog(context: context, barrierDismissible: false, builder: (_) => _UpdateProgressDialog(info: updateInfo)),
                   child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)), child: Text('Update', style: AppTypography.interButton(color: AppColors.cyanDeep, size: 12))),
                 ),
               ]),
@@ -129,13 +130,13 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
     title: Text(_failed ? 'Update failed' : 'Updating...', style: AppTypography.soraHeading3()),
     content: Column(mainAxisSize: MainAxisSize.min, children: [
       if (!_failed) ...[
-        LinearProgressIndicator(value: _progress == 0 ? null : _progress, color: AppColors.cyanDeep, backgroundColor: AppColors.shadowDark.withOpacity(0.2)),
+        LinearProgressIndicator(value: _progress == 0 ? null : _progress, color: AppColors.cyanDeep, backgroundColor: AppColors.shadowDark.withValues(alpha: 0.2)),
         const SizedBox(height: 12),
         Text(_status, style: AppTypography.interCaption(), textAlign: TextAlign.center),
         const SizedBox(height: 8),
         Text('Please keep app open. You may need to allow "Install unknown apps" when prompted.', style: AppTypography.interCaption(color: AppColors.inkSoft), textAlign: TextAlign.center),
       ] else ...[
-        Icon(Icons.error_outline_rounded, color: AppColors.error, size: 32),
+        const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 32),
         const SizedBox(height: 8),
         Text(_error ?? 'Unknown error', style: AppTypography.interBody(color: AppColors.error, size: 13), textAlign: TextAlign.center),
         const SizedBox(height: 8),
