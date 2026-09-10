@@ -9,17 +9,35 @@ import '../../core/widgets/dark_tile.dart';
 import '../../core/widgets/neu_card.dart';
 import '../../core/widgets/neu_chip.dart';
 import '../../core/widgets/neu_text_field.dart';
+import '../helping/helping_board_tab.dart';
 
 class JobsScreen extends ConsumerStatefulWidget {
-  const JobsScreen({super.key});
+  final int initialTab;
+  const JobsScreen({super.key, this.initialTab = 0});
   @override
   ConsumerState<JobsScreen> createState() => _JobsScreenState();
 }
 
 class _JobsScreenState extends ConsumerState<JobsScreen> {
+  late int _segment;
   String _selectedType = 'All';
   bool _remoteOnly = false;
   final _searchCtrl = TextEditingController();
+  final _boardKey = GlobalKey<HelpingBoardTabState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _segment = widget.initialTab == 1 ? 1 : 0;
+  }
+
+  @override
+  void didUpdateWidget(JobsScreen old) {
+    super.didUpdateWidget(old);
+    if (old.initialTab != widget.initialTab) {
+      setState(() => _segment = widget.initialTab == 1 ? 1 : 0);
+    }
+  }
 
   @override
   void dispose() {
@@ -29,9 +47,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filter = {'type': _selectedType, 'remoteOnly': _remoteOnly, 'q': _searchCtrl.text};
-    final asyncJobs = ref.watch(jobsProvider(filter));
-
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
@@ -39,43 +54,109 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Opportunities', style: AppTypography.soraDisplay(size: 26)),
-              Text('Jobs, Internships & Hackathons', style: AppTypography.interBody(color: AppColors.inkSoft)),
-              const SizedBox(height: 16),
-              NeuTextField(hint: '🔍  Search role or company', controller: _searchCtrl, onChanged: (_) => setState(() {}), prefixIcon: Icon(Icons.search_rounded, color: AppColors.inkSoft, size: 20)),
-              const SizedBox(height: 12),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+              Text('Work', style: AppTypography.soraDisplay(size: 26)),
+              Text(
+                _segment == 0 ? 'Jobs, Internships & Hackathons' : 'Paid & points tasks from students',
+                style: AppTypography.interBody(color: AppColors.inkSoft),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: AppColors.bg,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: AppColors.neuInsetShadows,
+                ),
                 child: Row(children: [
-                  ...['All', 'Internship', 'Job', 'Hackathon'].map((t) => Padding(padding: const EdgeInsets.only(right: 8), child: NeuChip(label: t, isSelected: _selectedType == t, onTap: () => setState(() => _selectedType = t)))),
-                  NeuChip(label: '🌐 Remote', isSelected: _remoteOnly, onTap: () => setState(() => _remoteOnly = !_remoteOnly), selectedColor: AppColors.success),
+                  Expanded(child: _SegmentBtn(label: 'Jobs', selected: _segment == 0, onTap: () => setState(() => _segment = 0))),
+                  Expanded(child: _SegmentBtn(label: 'Task Board', selected: _segment == 1, onTap: () => setState(() => _segment = 1))),
                 ]),
               ),
             ]),
           ),
-          Expanded(
-            child: asyncJobs.when(
-              data: (jobs) {
-                var filtered = jobs;
-                final q = _searchCtrl.text.toLowerCase();
-                if (q.isNotEmpty) filtered = jobs.where((j) => (j['title'] as String? ?? '').toLowerCase().contains(q) || (j['company'] as String? ?? '').toLowerCase().contains(q)).toList();
-                if (filtered.isEmpty) {
-                  return Center(child: Padding(padding: EdgeInsets.all(32), child: NeuCard(padding: EdgeInsets.all(24), child: Column(children: [Icon(Icons.work_outline, size: 40, color: AppColors.inkSoft), SizedBox(height: 12), Text('No opportunities found', style: AppTypography.soraHeading3()), Text('Try different filters', style: AppTypography.interCaption())]))));
-                }
-                return RefreshIndicator(
-                  onRefresh: () async => ref.invalidate(jobsProvider(filter)),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
-                    itemCount: filtered.length,
-                    itemBuilder: (ctx, i) => _JobCard(job: filtered[i]).animate(delay: (i * 60).ms).fadeIn(duration: 300.ms).slideY(begin: 0.1),
-                  ),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Text('Failed to load', style: AppTypography.interBody(color: AppColors.error)), Text(e.toString(), style: AppTypography.interCaption()), const SizedBox(height: 12), GestureDetector(onTap: () => ref.invalidate(jobsProvider(filter)), child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: AppColors.cyanDeep, borderRadius: BorderRadius.circular(10)), child: Text('Retry', style: AppTypography.interLabel(color: Colors.white))))])),
-            ),
+          const SizedBox(height: 12),
+          Expanded(child: _segment == 0 ? _buildJobsTab() : HelpingBoardTab(key: _boardKey)),
+        ]),
+      ),
+      floatingActionButton: _segment == 1
+          ? FloatingActionButton.extended(
+              backgroundColor: AppColors.cyanDeep,
+              onPressed: () => _boardKey.currentState?.openPostSheet(),
+              icon: const Icon(Icons.add_rounded, color: Colors.white),
+              label: Text('Post Task', style: AppTypography.interButton(color: Colors.white)),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildJobsTab() {
+    final filter = {'type': _selectedType, 'remoteOnly': _remoteOnly, 'q': _searchCtrl.text};
+    final asyncJobs = ref.watch(jobsProvider(filter));
+
+    return Column(children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          NeuTextField(hint: '🔍  Search role or company', controller: _searchCtrl, onChanged: (_) => setState(() {}), prefixIcon: Icon(Icons.search_rounded, color: AppColors.inkSoft, size: 20)),
+          const SizedBox(height: 12),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: [
+              ...['All', 'Internship', 'Job', 'Hackathon'].map((t) => Padding(padding: const EdgeInsets.only(right: 8), child: NeuChip(label: t, isSelected: _selectedType == t, onTap: () => setState(() => _selectedType = t)))),
+              NeuChip(label: '🌐 Remote', isSelected: _remoteOnly, onTap: () => setState(() => _remoteOnly = !_remoteOnly), selectedColor: AppColors.success),
+            ]),
           ),
         ]),
+      ),
+      Expanded(
+        child: asyncJobs.when(
+          data: (jobs) {
+            var filtered = jobs;
+            final q = _searchCtrl.text.toLowerCase();
+            if (q.isNotEmpty) filtered = jobs.where((j) => (j['title'] as String? ?? '').toLowerCase().contains(q) || (j['company'] as String? ?? '').toLowerCase().contains(q)).toList();
+            if (filtered.isEmpty) {
+              return Center(child: Padding(padding: EdgeInsets.all(32), child: NeuCard(padding: EdgeInsets.all(24), child: Column(children: [Icon(Icons.work_outline, size: 40, color: AppColors.inkSoft), SizedBox(height: 12), Text('No opportunities found', style: AppTypography.soraHeading3()), Text('Try different filters', style: AppTypography.interCaption())]))));
+            }
+            return RefreshIndicator(
+              onRefresh: () async => ref.invalidate(jobsProvider(filter)),
+              child: ListView.builder(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
+                itemCount: filtered.length,
+                itemBuilder: (ctx, i) => _JobCard(job: filtered[i]).animate(delay: (i * 60).ms).fadeIn(duration: 300.ms).slideY(begin: 0.1),
+              ),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Text('Failed to load', style: AppTypography.interBody(color: AppColors.error)), Text(e.toString(), style: AppTypography.interCaption()), const SizedBox(height: 12), GestureDetector(onTap: () => ref.invalidate(jobsProvider(filter)), child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: AppColors.cyanDeep, borderRadius: BorderRadius.circular(10)), child: Text('Retry', style: AppTypography.interLabel(color: Colors.white))))])),
+        ),
+      ),
+    ]);
+  }
+}
+
+class _SegmentBtn extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _SegmentBtn({required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          gradient: selected ? AppColors.cyanGradient : null,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: selected ? [BoxShadow(color: AppColors.cyanDeep.withOpacity(0.35), blurRadius: 12, offset: const Offset(0, 4))] : null,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: AppTypography.interButton(color: selected ? Colors.white : AppColors.inkSoft, size: 14),
+        ),
       ),
     );
   }
