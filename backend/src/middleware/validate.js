@@ -30,6 +30,7 @@ const schemas = {
     bio: Joi.string().max(300).allow('', null),
     skills: Joi.array().items(Joi.string().max(50)).max(20),
     profile_complete: Joi.boolean(),
+    photo_url: Joi.string().max(1000).allow('', null),
   }),
 
   createPost: Joi.object({
