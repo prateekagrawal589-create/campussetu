@@ -135,7 +135,7 @@ class _CreatePostSheetState extends State<CreatePostSheet> {
               const SizedBox(height: 12),
               Stack(children: [
                 ClipRRect(borderRadius: BorderRadius.circular(14), child: Image.file(_imageFile!, width: double.infinity, height: 160, fit: BoxFit.cover)),
-                Positioned(top: 8, right: 8, child: GestureDetector(onTap: () => setState(() => _imageFile = null), child: Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle), child: const Icon(Icons.close_rounded, size: 16, color: Colors.white)))),
+                Positioned(top: 8, right: 8, child: GestureDetector(onTap: () => setState(() => _imageFile = null), child: Container(padding: const EdgeInsets.all(6), decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle), child: const Icon(Icons.close_rounded, size: 16, color: Colors.white)))),
               ]),
             ],
             const SizedBox(height: 16),
