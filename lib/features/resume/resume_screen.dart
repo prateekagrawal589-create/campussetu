@@ -87,7 +87,7 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
 
   @override
   void dispose() {
-    for (final c in _ctrls.values) c.dispose();
+    for (final c in _ctrls.values) { c.dispose(); }
     super.dispose();
   }
 
@@ -206,9 +206,9 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
           Row(children: [
             Text('Choose Template', style: AppTypography.soraHeading3()),
             const Spacer(),
-            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Text('10 Free', style: AppTypography.interBadge(color: AppColors.success))),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: Text('10 Free', style: AppTypography.interBadge(color: AppColors.success))),
             const SizedBox(width: 6),
-            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(8)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.workspace_premium_rounded, size: 10, color: AppColors.gold), const SizedBox(width: 4), Text('10 PRO', style: AppTypography.interBadge(color: AppColors.gold))])),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.gold.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)), child: Row(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.workspace_premium_rounded, size: 10, color: AppColors.gold), const SizedBox(width: 4), Text('10 PRO', style: AppTypography.interBadge(color: AppColors.gold))])),
           ]),
           const SizedBox(height: 6),
           Text('10 simple free for everyone, 10 premium for subscribers', style: AppTypography.interCaption()),
@@ -237,7 +237,7 @@ class _ResumeScreenState extends ConsumerState<ResumeScreen> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [GlowText('ATS Score', style: AppTypography.soraHeading3(color: AppColors.cyan)), const Spacer(), Text('$_ats/100', style: AppTypography.monoDisplay(size: 28, color: AppColors.cyan))]),
               const SizedBox(height: 12),
-              ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: _ats / 100, minHeight: 8, color: AppColors.cyan, backgroundColor: AppColors.cyanDeep.withOpacity(0.2))),
+              ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: _ats / 100, minHeight: 8, color: AppColors.cyan, backgroundColor: AppColors.cyanDeep.withValues(alpha: 0.2))),
               const SizedBox(height: 12),
               Text(_ats < 70 ? 'Add Experience and Projects to improve your score' : 'Great! Your resume is ready to export', style: AppTypography.interBodySmall(color: AppColors.inkSoft)),
               const SizedBox(height: 8),
@@ -278,7 +278,7 @@ class _SectionCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       onTap: section.onTap,
       child: Row(children: [
-        Container(width: 44, height: 44, decoration: BoxDecoration(color: (section.done ? AppColors.success : AppColors.cyanDeep).withOpacity(0.1), borderRadius: BorderRadius.circular(12)), child: Icon(section.icon, color: section.done ? AppColors.success : AppColors.cyanDeep, size: 22)),
+        Container(width: 44, height: 44, decoration: BoxDecoration(color: (section.done ? AppColors.success : AppColors.cyanDeep).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)), child: Icon(section.icon, color: section.done ? AppColors.success : AppColors.cyanDeep, size: 22)),
         const SizedBox(width: 14),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(section.title, style: AppTypography.interButton(color: AppColors.ink, size: 14)), Text(section.subtitle, style: AppTypography.interCaption(), maxLines: 1, overflow: TextOverflow.ellipsis)])),
         Icon(section.done ? Icons.check_circle_rounded : Icons.arrow_forward_ios_rounded, color: section.done ? AppColors.success : AppColors.inkSoft, size: section.done ? 20 : 14),
@@ -301,17 +301,17 @@ class _TemplateTile extends StatelessWidget {
     return Container(
       height: 62,
       margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.shadowDark.withOpacity(0.3))),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.shadowDark.withValues(alpha: 0.3))),
       child: Column(children: [
-        Container(height: 14, decoration: BoxDecoration(color: headerColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(8))), alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 6), child: Row(children: [Container(width: 18, height: 4, decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(2))), const SizedBox(width: 4), Container(width: 10, height: 4, decoration: BoxDecoration(color: Colors.white.withOpacity(0.6), borderRadius: BorderRadius.circular(2))), const Spacer(), Icon(icon, size: 8, color: Colors.white.withOpacity(0.8))])),
+        Container(height: 14, decoration: BoxDecoration(color: headerColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(8))), alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 6), child: Row(children: [Container(width: 18, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.9), borderRadius: BorderRadius.circular(2))), const SizedBox(width: 4), Container(width: 10, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.6), borderRadius: BorderRadius.circular(2))), const Spacer(), Icon(icon, size: 8, color: Colors.white.withValues(alpha: 0.8))])),
         Expanded(child: Padding(padding: const EdgeInsets.all(6), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [Expanded(child: Container(height: 3, decoration: BoxDecoration(color: accent.withOpacity(0.8), borderRadius: BorderRadius.circular(2)))), const SizedBox(width: 4), Expanded(child: Container(height: 3, decoration: BoxDecoration(color: AppColors.shadowDark.withOpacity(0.4), borderRadius: BorderRadius.circular(2))))]),
+          Row(children: [Expanded(child: Container(height: 3, decoration: BoxDecoration(color: accent.withValues(alpha: 0.8), borderRadius: BorderRadius.circular(2)))), const SizedBox(width: 4), Expanded(child: Container(height: 3, decoration: BoxDecoration(color: AppColors.shadowDark.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(2))))]),
           const SizedBox(height: 4),
-          Container(height: 2, width: double.infinity, decoration: BoxDecoration(color: AppColors.shadowDark.withOpacity(0.2), borderRadius: BorderRadius.circular(2))),
+          Container(height: 2, width: double.infinity, decoration: BoxDecoration(color: AppColors.shadowDark.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2))),
           const SizedBox(height: 3),
-          Container(height: 2, width: 60, decoration: BoxDecoration(color: AppColors.shadowDark.withOpacity(0.15), borderRadius: BorderRadius.circular(2))),
+          Container(height: 2, width: 60, decoration: BoxDecoration(color: AppColors.shadowDark.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(2))),
           const SizedBox(height: 4),
-          Row(children: [Container(width: 14, height: 14, decoration: BoxDecoration(color: accent.withOpacity(0.15), borderRadius: BorderRadius.circular(3))), const SizedBox(width: 4), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(height: 2, decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.15), borderRadius: BorderRadius.circular(2))), const SizedBox(height: 2), Container(height: 2, width: 30, decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.1), borderRadius: BorderRadius.circular(2)))]))]),
+          Row(children: [Container(width: 14, height: 14, decoration: BoxDecoration(color: accent.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(3))), const SizedBox(width: 4), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(height: 2, decoration: BoxDecoration(color: AppColors.ink.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(2))), const SizedBox(height: 2), Container(height: 2, width: 30, decoration: BoxDecoration(color: AppColors.ink.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(2)))]))]),
         ]))),
       ]),
     );
@@ -326,11 +326,11 @@ class _TemplateTile extends StatelessWidget {
         const SizedBox(height: 6),
         Text(name, style: AppTypography.interButton(color: isLocked ? AppColors.inkMuted : (isSelected ? AppColors.cyanDeep : AppColors.ink), size: 11), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
         const SizedBox(height: 3),
-        if (isSelected) const NeuChip(label: '✓ Selected') else if (isPremium) Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.15), borderRadius: BorderRadius.circular(6)), child: Text('PRO', style: AppTypography.interBadge(color: AppColors.gold))) else Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Text('FREE', style: AppTypography.interBadge(color: AppColors.success))),
+        if (isSelected) const NeuChip(label: '✓ Selected') else if (isPremium) Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.gold.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)), child: Text('PRO', style: AppTypography.interBadge(color: AppColors.gold))) else Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)), child: Text('FREE', style: AppTypography.interBadge(color: AppColors.success))),
         const SizedBox(height: 6),
       ]),
       if (isLocked)
-        Container(decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.45), borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: const Icon(Icons.lock_rounded, color: Colors.white, size: 22)),
+        Container(decoration: BoxDecoration(color: AppColors.ink.withValues(alpha: 0.45), borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: const Icon(Icons.lock_rounded, color: Colors.white, size: 22)),
       if (isPremium && !isLocked)
         const Positioned(top: 6, right: 6, child: PremiumBadge(label: 'PRO', isSmall: true)),
       if (isSelected)
