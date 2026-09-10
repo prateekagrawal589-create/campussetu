@@ -13,5 +13,6 @@ router.get('/jobs/pending', c.getPendingJobs);
 router.put('/jobs/:id/approve', c.approveJob);
 router.put('/notes/:id/approve', c.approveNote);
 router.post('/broadcast', c.broadcast);
+router.post('/points', c.grantPoints);
 
 module.exports = router;
