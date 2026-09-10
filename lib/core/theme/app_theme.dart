@@ -14,9 +14,9 @@ class AppTheme {
 
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    final bg = isDark ? Color(0xFF12141F) : AppColors.bg;
-    final ink = isDark ? Color(0xFFE9EBEE) : AppColors.ink;
-    final inkSoft = isDark ? Color(0xFF9CA3AF) : AppColors.inkSoft;
+    final bg = isDark ? const Color(0xFF12141F) : AppColors.bg;
+    final ink = isDark ? const Color(0xFFE9EBEE) : AppColors.ink;
+    final inkSoft = isDark ? const Color(0xFF9CA3AF) : AppColors.inkSoft;
     return ThemeData(
         useMaterial3: true,
         brightness: brightness,
@@ -92,7 +92,7 @@ class AppTheme {
         ),
         chipTheme: ChipThemeData(
           backgroundColor: AppColors.bg,
-          selectedColor: AppColors.cyanDeep.withOpacity(0.15),
+          selectedColor: AppColors.cyanDeep.withValues(alpha: 0.15),
           side: BorderSide.none,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           labelStyle: GoogleFonts.inter(
@@ -107,7 +107,7 @@ class AppTheme {
           thickness: 1,
           space: 0,
         ),
-        pageTransitionsTheme: PageTransitionsTheme(
+        pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
             TargetPlatform.android: CupertinoPageTransitionsBuilder(),
             TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
