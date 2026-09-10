@@ -23,7 +23,12 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final Map<String, PostModel> _likeOverrides = {};
+  final Set<String> _liking = {};
+
   Future<void> _refresh() async {
+    _likeOverrides.clear();
+    _liking.clear();
     ref.invalidate(currentUserProvider);
     ref.invalidate(feedProvider);
   }
@@ -36,23 +41,94 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _toggleLike(String postId) async {
+  Future<void> _toggleLike(PostModel post) async {
+    if (_liking.contains(post.id)) return;
+    final base = _likeOverrides[post.id] ?? post;
+    final wantLiked = !base.isLiked;
+    setState(() {
+      _liking.add(post.id);
+      _likeOverrides[post.id] = base.copyWith(
+        isLiked: wantLiked,
+        likesCount: base.likesCount + (wantLiked ? 1 : -1),
+      );
+    });
     try {
       await _ensureToken();
-      await ApiService().toggleLike(postId);
-      ref.invalidate(feedProvider);
+      final res = await ApiService().toggleLike(post.id);
+      if (!mounted) return;
+      setState(() {
+        final cur = _likeOverrides[post.id] ?? base;
+        int? count;
+        final raw = res['likes_count'] ?? res['likesCount'];
+        if (raw is int) count = raw;
+        if (raw is String) count = int.tryParse(raw);
+        _likeOverrides[post.id] = cur.copyWith(
+          isLiked: res['liked'] == true,
+          likesCount: count ?? cur.likesCount,
+        );
+      });
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      if (!mounted) return;
+      setState(() => _likeOverrides.remove(post.id));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_apiError(e, 'Like failed')), backgroundColor: AppColors.error));
+    } finally {
+      if (mounted) setState(() => _liking.remove(post.id));
     }
   }
 
-  Future<void> _openComments(String postId) async {
+  void _bumpComments(String postId) {
+    final feed = ref.read(feedProvider).value;
+    if (feed == null) return;
+    PostModel? found;
+    for (final p in feed) {
+      if (p.id == postId) { found = p; break; }
+    }
+    if (found == null) return;
+    final base = _likeOverrides[postId] ?? found;
+    setState(() => _likeOverrides[postId] = base.copyWith(commentsCount: base.commentsCount + 1));
+  }
+
+  Future<void> _openComments(PostModel post) async {
+    final display = _likeOverrides[post.id] ?? post;
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _CommentsSheet(postId: postId, onCommented: () => ref.invalidate(feedProvider)),
+      builder: (_) => _CommentsSheet(postId: post.id, onCommented: () => _bumpComments(post.id)),
     );
+    await _ensureToken();
+    try {
+      final res = await ApiService().getFeed(page: 1, limit: 20);
+      final List list = (res['data'] as List?) ?? [];
+      for (final e in list) {
+        final m = Map<String, dynamic>.from(e as Map);
+        if (m['id'].toString() == post.id) {
+          m['author'] = m['author'] is Map ? Map<String, dynamic>.from(m['author'] as Map) : <String, dynamic>{};
+          if ((m['author'] as Map).isEmpty && m['author_id'] != null) (m['author'] as Map)['id'] = m['author_id'];
+          m['likes_count'] = m['likes_count'] ?? m['likesCount'] ?? 0;
+          m['comments_count'] = m['comments_count'] ?? m['commentsCount'] ?? 0;
+          m['is_liked'] = m['is_liked'] ?? m['isLiked'] ?? false;
+          m['image_url'] = m['image_url'] ?? m['imageUrl'];
+          final fresh = PostModel.fromJson(m);
+          if (!mounted) return;
+          setState(() {
+            final ov = _likeOverrides[post.id];
+            _likeOverrides[post.id] = fresh.copyWith(isLiked: ov?.isLiked ?? fresh.isLiked, likesCount: ov?.likesCount ?? fresh.likesCount);
+          });
+          break;
+        }
+      }
+    } catch (_) {}
+  }
+
+  String _apiError(Object e, String fallback) {
+    try {
+      final d = (e as dynamic)?.response?.data;
+      if (d is Map && d['error'] != null) return d['error'].toString();
+    } catch (_) {}
+    final s = e.toString();
+    if (s.contains('404')) return 'Post not found';
+    return '$fallback: ${s.length > 100 ? s.substring(0, 100) : s}';
   }
 
   Future<void> _sharePost(PostModel post) async {
@@ -165,6 +241,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: NeuCard(
+                      padding: const EdgeInsets.all(16),
+                      onTap: () => context.push(AppRoutes.helping),
+                      child: Row(children: [
+                        Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.15), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.handshake_outlined, color: AppColors.warning, size: 24)),
+                        const SizedBox(width: 12),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Helping Hand 🤝', style: AppTypography.interButton(size: 14)), Text('Paid & points tasks • post or earn', style: AppTypography.interCaption())])),
+                        const Icon(Icons.arrow_forward_rounded, size: 18, color: AppColors.cyanDeep),
+                      ]),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -189,11 +278,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 }
                 return SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => PostCard(
-                      post: posts[index],
-                      onLike: () => _toggleLike(posts[index].id),
-                      onComment: () => _openComments(posts[index].id),
-                      onShare: () => _sharePost(posts[index]),
+                    (context, index) {
+                      final display = _likeOverrides[posts[index].id] ?? posts[index];
+                      return PostCard(
+                      post: display,
+                      onLike: () => _toggleLike(display),
+                      onComment: () => _openComments(display),
+                      onShare: () => _sharePost(display),
                       onReport: () async {
                         try {
                           await _ensureToken();
@@ -203,7 +294,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
                         }
                       },
-                    ).animate(delay: (index * 80).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1),
+                    ).animate(delay: (index * 80).ms).fadeIn(duration: 400.ms).slideY(begin: 0.1);
+                    },
                     childCount: posts.length,
                   ),
                 );
@@ -259,6 +351,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
   List<CommentModel> _comments = [];
   bool _loading = true;
   bool _sending = false;
+  String? _loadError;
 
   @override
   void initState() {
@@ -275,18 +368,29 @@ class _CommentsSheetState extends State<_CommentsSheet> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    setState(() { _loading = true; _loadError = null; });
     try {
       await _ensureToken();
       final list = await ApiService().getComments(widget.postId);
-      setState(() => _comments = list.map((e) {
-        final m = Map<String, dynamic>.from(e as Map);
-        final author = m['author'] is Map ? Map<String, dynamic>.from(m['author'] as Map) : <String, dynamic>{};
-        m['author'] = author;
-        return CommentModel.fromJson(m);
-      }).toList());
-    } catch (_) {
-      setState(() => _comments = []);
+      final parsed = <CommentModel>[];
+      for (final e in list) {
+        try {
+          final m = Map<String, dynamic>.from(e as Map);
+          final author = m['author'] is Map ? Map<String, dynamic>.from(m['author'] as Map) : <String, dynamic>{};
+          m['author'] = author;
+          parsed.add(CommentModel.fromJson(m));
+        } catch (_) {}
+      }
+      if (mounted) setState(() => _comments = parsed);
+    } catch (e) {
+      if (mounted) {
+        String msg = 'Comments load nahi hue';
+        try {
+          final d = (e as dynamic)?.response?.data;
+          if (d is Map && d['error'] != null) msg = d['error'].toString();
+        } catch (_) {}
+        setState(() => _loadError = msg);
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -294,20 +398,37 @@ class _CommentsSheetState extends State<_CommentsSheet> {
 
   Future<void> _send() async {
     final text = _ctrl.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _sending) return;
     setState(() => _sending = true);
     try {
       await _ensureToken();
-      await ApiService().addComment(widget.postId, text);
+      final res = await ApiService().addComment(widget.postId, text);
       _ctrl.clear();
       widget.onCommented();
-      await _load();
+      bool prepended = false;
+      try {
+        final m = Map<String, dynamic>.from(res);
+        if (m['author'] is! Map) m['author'] = <String, dynamic>{};
+        final c = CommentModel.fromJson(m);
+        if (mounted) setState(() => _comments.insert(0, c));
+        prepended = true;
+      } catch (_) {}
+      if (!prepended) await _load();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comment added ✓'), backgroundColor: AppColors.success));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e'), backgroundColor: AppColors.error));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_serverError(e)), backgroundColor: AppColors.error));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
+  }
+
+  String _serverError(Object e) {
+    try {
+      final d = (e as dynamic)?.response?.data;
+      if (d is Map && d['error'] != null) return d['error'].toString();
+    } catch (_) {}
+    final s = e.toString();
+    return s.length > 120 ? s.substring(0, 120) : s;
   }
 
   @override
@@ -332,7 +453,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-                : _comments.isEmpty
+                : _loadError != null && _comments.isEmpty
+                    ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.error_outline_rounded, color: AppColors.error, size: 32), SizedBox(height: 8), Text(_loadError!, style: AppTypography.interBody(color: AppColors.error, size: 13), textAlign: TextAlign.center), SizedBox(height: 10), GestureDetector(onTap: _load, child: Container(padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: AppColors.cyanDeep, borderRadius: BorderRadius.circular(10)), child: Text('Retry', style: AppTypography.interLabel(color: Colors.white))))]))
+                    : _comments.isEmpty
                     ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.chat_bubble_outline, color: AppColors.inkSoft, size: 32), SizedBox(height: 8), Text('No comments yet', style: AppTypography.interBody(color: AppColors.inkSoft)), Text('Be the first to comment!', style: AppTypography.interCaption())]))
                     : ListView.separated(
                         itemCount: _comments.length,
