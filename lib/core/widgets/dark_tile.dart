@@ -39,19 +39,19 @@ class DarkTile extends StatelessWidget {
       boxShadow: showGlow
           ? [
               BoxShadow(
-                color: AppColors.cyan.withOpacity(glowIntensity),
+                color: AppColors.cyan.withValues(alpha: glowIntensity),
                 blurRadius: 28,
                 spreadRadius: 2,
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.4),
+                color: Colors.black.withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ]
           : [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -100,8 +100,8 @@ class GlowText extends StatelessWidget {
       style: (style ?? const TextStyle()).copyWith(
         color: glowColor,
         shadows: [
-          Shadow(color: glowColor.withOpacity(0.8), blurRadius: glowRadius),
-          Shadow(color: glowColor.withOpacity(0.4), blurRadius: glowRadius * 2),
+          Shadow(color: glowColor.withValues(alpha: 0.8), blurRadius: glowRadius),
+          Shadow(color: glowColor.withValues(alpha: 0.4), blurRadius: glowRadius * 2),
         ],
       ),
     );
@@ -151,7 +151,7 @@ class _GlowDotState extends State<GlowDot> with SingleTickerProviderStateMixin {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: widget.color.withOpacity(_pulse.value * 0.8),
+              color: widget.color.withValues(alpha: _pulse.value * 0.8),
               blurRadius: widget.size * 2,
               spreadRadius: widget.size * 0.3,
             ),
