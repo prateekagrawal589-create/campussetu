@@ -17,6 +17,7 @@ class UserModel {
   final bool isVerified;
   final bool isPremium;
   final String role; // 'student' | 'admin'
+  final String? campusId;
   final bool profileComplete;
   final DateTime createdAt;
   final int connectionsCount;
@@ -41,6 +42,7 @@ class UserModel {
     this.isVerified = false,
     this.isPremium = false,
     this.role = 'student',
+    this.campusId,
     this.profileComplete = false,
     required this.createdAt,
     this.connectionsCount = 0,
@@ -80,6 +82,7 @@ class UserModel {
         isVerified: _toBool(json['is_verified']),
         isPremium: _toBool(json['is_premium']),
         role: json['role'] ?? 'student',
+        campusId: json['campus_id']?.toString(),
         profileComplete: _toBool(json['profile_complete']),
         createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
         connectionsCount: _toInt(json['connections_count'] ?? json['connectionsCount']),
@@ -90,6 +93,7 @@ class UserModel {
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'campus_id': campusId,
         'firebase_uid': firebaseUid,
         'email': email,
         'name': name,
@@ -122,6 +126,7 @@ class UserModel {
     List<String>? skills,
     bool? isVerified,
     bool? isPremium,
+    String? campusId,
     bool? profileComplete,
     int? connectionsCount,
     int? notesCount,
@@ -145,6 +150,7 @@ class UserModel {
         isVerified: isVerified ?? this.isVerified,
         isPremium: isPremium ?? this.isPremium,
         role: role,
+        campusId: campusId ?? this.campusId,
         profileComplete: profileComplete ?? this.profileComplete,
         createdAt: createdAt,
         connectionsCount: connectionsCount ?? this.connectionsCount,
@@ -155,7 +161,7 @@ class UserModel {
 
   double get profileCompletionScore {
     int filled = 0;
-    final total = 9;
+    const total = 9;
     if (name.isNotEmpty) filled++;
     if (photoUrl != null && photoUrl!.isNotEmpty) filled++;
     if (college != null && college!.isNotEmpty) filled++;
