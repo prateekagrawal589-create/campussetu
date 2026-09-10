@@ -81,7 +81,7 @@ class UpdateService {
         final match = RegExp(r'version:\s*([0-9]+\.[0-9]+\.[0-9]+)').firstMatch(body);
         if (match != null) {
           final tag = match.group(1)!;
-          final apkUrl = 'https://github.com/$githubRepo/releases/latest/download/app-release.apk';
+          const apkUrl = 'https://github.com/$githubRepo/releases/latest/download/app-release.apk';
           final info = UpdateInfo(currentVersion: currentShort, latestVersion: tag, apkUrl: apkUrl, releaseNotes: 'New version $tag available — please update');
           if (info.hasUpdate) return info;
         }
