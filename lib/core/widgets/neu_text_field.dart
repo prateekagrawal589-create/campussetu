@@ -88,7 +88,7 @@ class _NeuTextFieldState extends State<NeuTextField> {
                 ? [
                     ...AppColors.neuInsetShadows,
                     BoxShadow(
-                      color: AppColors.cyanDeep.withOpacity(0.15),
+                      color: AppColors.cyanDeep.withValues(alpha: 0.15),
                       blurRadius: 12,
                       spreadRadius: 1,
                     ),
