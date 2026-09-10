@@ -66,6 +66,14 @@ class ApiService {
     return (data as List?) ?? [];
   }
 
+  Future<List<dynamic>> getSentRequests() async {
+    final res = await _dio.get('/connect/sent');
+    final data = res.data;
+    if (data is List) return data;
+    if (data is Map && data['data'] is List) return data['data'] as List;
+    return (data as List?) ?? [];
+  }
+
   Future<List<dynamic>> getMyConnections() async {
     final res = await _dio.get('/connect/my');
     final data = res.data;
@@ -73,6 +81,13 @@ class ApiService {
     if (data is Map && data['data'] is List) return data['data'] as List;
     return (data as List?) ?? [];
   }
+
+  Future<void> removeConnection(String connectionId) async {
+    await _dio.delete('/connect/$connectionId');
+  }
+
+  Dio get dioForDebug => _dio;
+  Dio getDioForCustom() => _dio;
 
   Future<Map<String, dynamic>> getMe() async {
     final res = await _dio.get('/users/me');
@@ -202,5 +217,64 @@ class ApiService {
   Future<Map<String, dynamic>> getJobApprovalQueue() async {
     final res = await _dio.get('/admin/jobs/pending');
     return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> getHelpingTasks({String? type, bool? mine, String status = 'open', String? q}) async {
+    final res = await _dio.get('/helping', queryParameters: {
+      if (type != null) 'type': type,
+      if (mine == true) 'mine': 'true',
+      'status': status,
+      if (q != null && q.isNotEmpty) 'q': q,
+    });
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> getHelpingTask(String id) async {
+    final res = await _dio.get('/helping/$id');
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> createHelpingTask({required String title, required String description, required String type, double? amount, int? points, String? deadline, String? imagePath}) async {
+    if (imagePath != null) {
+      final form = FormData.fromMap({
+        'title': title,
+        'description': description,
+        'type': type,
+        if (amount != null) 'amount': amount.toString(),
+        if (points != null) 'points': points.toString(),
+        if (deadline != null) 'deadline': deadline,
+        'image': await MultipartFile.fromFile(imagePath),
+      });
+      final res = await _dio.post('/helping', data: form);
+      return res.data as Map<String, dynamic>;
+    }
+    final res = await _dio.post('/helping', data: {
+      'title': title,
+      'description': description,
+      'type': type,
+      if (amount != null) 'amount': amount,
+      if (points != null) 'points': points,
+      if (deadline != null) 'deadline': deadline,
+    });
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> applyHelpingTask(String id) async {
+    final res = await _dio.post('/helping/$id/apply');
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> acceptHelpingApplicant(String id, String applicantId) async {
+    final res = await _dio.post('/helping/$id/accept', data: {'applicant_id': applicantId});
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> completeHelpingTask(String id) async {
+    final res = await _dio.post('/helping/$id/complete');
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<void> deleteHelpingTask(String id) async {
+    await _dio.delete('/helping/$id');
   }
 }
