@@ -89,7 +89,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _openComments(PostModel post) async {
-    final display = _likeOverrides[post.id] ?? post;
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -232,7 +231,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             if (created == true) ref.invalidate(feedProvider);
                           },
                           child: Row(children: [
-                            Icon(Icons.add_rounded, size: 18, color: AppColors.cyanDeep),
+                            const Icon(Icons.add_rounded, size: 18, color: AppColors.cyanDeep),
                             const SizedBox(width: 6),
                             Text('Post', style: AppTypography.interLabel(color: AppColors.cyanDeep)),
                           ]),
@@ -247,7 +246,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       padding: const EdgeInsets.all(16),
                       onTap: () => context.push(AppRoutes.helping),
                       child: Row(children: [
-                        Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.15), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.handshake_outlined, color: AppColors.warning, size: 24)),
+                        Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.handshake_outlined, color: AppColors.warning, size: 24)),
                         const SizedBox(width: 12),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Helping Hand 🤝', style: AppTypography.interButton(size: 14)), Text('Paid & points tasks • post or earn', style: AppTypography.interCaption())])),
                         const Icon(Icons.arrow_forward_rounded, size: 18, color: AppColors.cyanDeep),
@@ -334,7 +333,7 @@ class _PostShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-        child: NeuCard(padding: EdgeInsets.all(16), child: Column(children: [Container(height: 14, color: AppColors.shadowDark.withOpacity(0.3)), SizedBox(height: 8), Container(height: 14, color: AppColors.shadowDark.withOpacity(0.2)), SizedBox(height: 12), Container(height: 80, decoration: BoxDecoration(color: AppColors.shadowDark.withOpacity(0.15), borderRadius: BorderRadius.circular(12)))])),
+        child: NeuCard(padding: const EdgeInsets.all(16), child: Column(children: [Container(height: 14, color: AppColors.shadowDark.withValues(alpha: 0.3)), const SizedBox(height: 8), Container(height: 14, color: AppColors.shadowDark.withValues(alpha: 0.2)), const SizedBox(height: 12), Container(height: 80, decoration: BoxDecoration(color: AppColors.shadowDark.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)))])),
       );
 }
 
@@ -454,16 +453,16 @@ class _CommentsSheetState extends State<_CommentsSheet> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
                 : _loadError != null && _comments.isEmpty
-                    ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.error_outline_rounded, color: AppColors.error, size: 32), SizedBox(height: 8), Text(_loadError!, style: AppTypography.interBody(color: AppColors.error, size: 13), textAlign: TextAlign.center), SizedBox(height: 10), GestureDetector(onTap: _load, child: Container(padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: AppColors.cyanDeep, borderRadius: BorderRadius.circular(10)), child: Text('Retry', style: AppTypography.interLabel(color: Colors.white))))]))
+                    ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 32), const SizedBox(height: 8), Text(_loadError!, style: AppTypography.interBody(color: AppColors.error, size: 13), textAlign: TextAlign.center), const SizedBox(height: 10), GestureDetector(onTap: _load, child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: AppColors.cyanDeep, borderRadius: BorderRadius.circular(10)), child: Text('Retry', style: AppTypography.interLabel(color: Colors.white))))]))
                     : _comments.isEmpty
-                    ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.chat_bubble_outline, color: AppColors.inkSoft, size: 32), SizedBox(height: 8), Text('No comments yet', style: AppTypography.interBody(color: AppColors.inkSoft)), Text('Be the first to comment!', style: AppTypography.interCaption())]))
+                    ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.chat_bubble_outline, color: AppColors.inkSoft, size: 32), const SizedBox(height: 8), Text('No comments yet', style: AppTypography.interBody(color: AppColors.inkSoft)), Text('Be the first to comment!', style: AppTypography.interCaption())]))
                     : ListView.separated(
                         itemCount: _comments.length,
                         separatorBuilder: (_, __) => Divider(height: 1, color: AppColors.shadowDark),
                         itemBuilder: (_, i) {
                           final c = _comments[i];
                           return ListTile(
-                            leading: CircleAvatar(backgroundColor: AppColors.cyanDeep.withOpacity(0.15), child: Text(c.author.name.isNotEmpty ? c.author.name[0].toUpperCase() : '?', style: AppTypography.interButton(color: AppColors.cyanDeep))),
+                            leading: CircleAvatar(backgroundColor: AppColors.cyanDeep.withValues(alpha: 0.15), child: Text(c.author.name.isNotEmpty ? c.author.name[0].toUpperCase() : '?', style: AppTypography.interButton(color: AppColors.cyanDeep))),
                             title: Text(c.author.name, style: AppTypography.interButton(size: 13)),
                             subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(c.content, style: AppTypography.interBody(size: 13)), const SizedBox(height: 2), Text(timeago.format(c.createdAt, locale: 'en_short'), style: AppTypography.monoTimestamp())]),
                           );
@@ -472,7 +471,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
           ),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: TextField(controller: _ctrl, decoration: InputDecoration(hintText: 'Add a comment...', hintStyle: AppTypography.interBody(color: AppColors.inkSoft), filled: true, fillColor: AppColors.bg, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none), contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10)), maxLength: 500, buildCounter: (_, {required currentLength, required isFocused, maxLength}) => SizedBox.shrink())),
+            Expanded(child: TextField(controller: _ctrl, decoration: InputDecoration(hintText: 'Add a comment...', hintStyle: AppTypography.interBody(color: AppColors.inkSoft), filled: true, fillColor: AppColors.bg, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10)), maxLength: 500, buildCounter: (_, {required currentLength, required isFocused, maxLength}) => const SizedBox.shrink())),
             const SizedBox(width: 8),
             GestureDetector(
               onTap: _sending ? null : _send,
