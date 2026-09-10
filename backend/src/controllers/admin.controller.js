@@ -1,6 +1,38 @@
 // backend/src/controllers/admin.controller.js
 const db = require('../config/db');
 const admin = require('../config/firebase');
+const { v4: uuidv4 } = require('uuid');
+
+// ── POST /admin/points {user_id | campus_id, amount, reason?} ──
+// Admin can grant (or revoke with negative amount) any points
+exports.grantPoints = async (req, res) => {
+  try {
+    const { user_id, campus_id, amount, reason } = req.body;
+    const pts = parseInt(amount);
+    if (!pts || pts === 0) return res.status(400).json({ error: 'valid non-zero amount required' });
+    if (Math.abs(pts) > 1000000) return res.status(400).json({ error: 'amount too large' });
+
+    let targetId = user_id;
+    if (!targetId && campus_id) {
+      const { rows } = await db.query('SELECT id FROM users WHERE UPPER(campus_id) = $1', [String(campus_id).trim().toUpperCase()]);
+      if (!rows.length) return res.status(404).json({ error: 'Student not found' });
+      targetId = rows[0].id;
+    }
+    if (!targetId) return res.status(400).json({ error: 'user_id or campus_id required' });
+
+    const { rows: u } = await db.query('SELECT id, name FROM users WHERE id = $1', [targetId]);
+    if (!u.length) return res.status(404).json({ error: 'Student not found' });
+
+    await db.query(
+      `INSERT INTO points_ledger (id, user_id, amount, reason) VALUES ($1,$2,$3,$4)`,
+      [uuidv4(), targetId, pts, `admin_grant:${(reason || 'reward').toString().slice(0, 60)}`]
+    );
+    const { rows: b } = await db.query('SELECT COALESCE(SUM(amount),0)::int AS bal FROM points_ledger WHERE user_id = $1', [targetId]);
+    res.json({ user_id: targetId, name: u[0].name, granted: pts, new_balance: b[0].bal });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
 // ── GET /admin/stats ──────────────────────────────────────
 exports.getStats = async (req, res) => {
