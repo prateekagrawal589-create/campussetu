@@ -29,10 +29,10 @@ class NeuChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? activeColor.withOpacity(0.12) : AppColors.bg,
+          color: isSelected ? activeColor.withValues(alpha: 0.12) : AppColors.bg,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? activeColor.withOpacity(0.4) : Colors.transparent,
+            color: isSelected ? activeColor.withValues(alpha: 0.4) : Colors.transparent,
             width: 1.5,
           ),
           boxShadow: isSelected ? [] : AppColors.neuSmallShadows,
