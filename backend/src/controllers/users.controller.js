@@ -1,6 +1,46 @@
 // backend/src/controllers/users.controller.js
 const db = require('../config/db');
 const admin = require('../config/firebase');
+const { v4: uuidv4 } = require('uuid');
+
+const CAMPUS_ID_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function genCampusId() {
+  let s = 'CS-';
+  for (let i = 0; i < 6; i++) s += CAMPUS_ID_CHARS[Math.floor(Math.random() * CAMPUS_ID_CHARS.length)];
+  return s;
+}
+
+// Ensures user has a unique campus_id (for identity card + points transfer)
+async function ensureCampusId(userId) {
+  const { rows } = await db.query('SELECT campus_id FROM users WHERE id = $1', [userId]);
+  if (!rows.length || rows[0].campus_id) return rows.length ? rows[0].campus_id : null;
+  for (let i = 0; i < 8; i++) {
+    try {
+      const cid = genCampusId();
+      const { rows: u } = await db.query('UPDATE users SET campus_id = $1 WHERE id = $2 AND campus_id IS NULL RETURNING campus_id', [cid, userId]);
+      if (u.length) return u[0].campus_id;
+      const { rows: cur } = await db.query('SELECT campus_id FROM users WHERE id = $1', [userId]);
+      if (cur.length && cur[0].campus_id) return cur[0].campus_id;
+    } catch (e) { if (e.code !== '23505') throw e; }
+  }
+  return null;
+}
+
+// Awards 25 signup bonus once (unique index makes concurrent calls safe)
+async function ensureSignupBonus(userId) {
+  await db.query(
+    `INSERT INTO points_ledger (id, user_id, amount, reason)
+     VALUES ($1, $2, 25, 'signup_bonus') ON CONFLICT DO NOTHING`,
+    [uuidv4(), userId]
+  );
+}
+
+function parseStrictAmount(v) {
+  const s = String(v ?? '').trim();
+  if (!/^\d+$/.test(s)) return null;
+  const n = parseInt(s, 10);
+  return Number.isSafeInteger(n) && n > 0 ? n : null;
+}
 
 // ── GET /users/:id ──────────────────────────────────────
 exports.getUser = async (req, res) => {
@@ -15,7 +55,16 @@ exports.getUser = async (req, res) => {
       [id]
     );
     if (!rows.length) return res.status(404).json({ error: 'User not found' });
-    res.json(rows[0]);
+    await ensureCampusId(id);
+    const { rows: fresh } = await db.query(
+      `SELECT u.*,
+        (SELECT COUNT(*) FROM connections c WHERE (c.requester_id = u.id OR c.receiver_id = u.id) AND c.status = 'accepted') AS connections_count,
+        (SELECT COUNT(*) FROM notes n WHERE n.uploader_id = u.id AND n.is_approved = true) AS notes_count,
+        (SELECT COALESCE(SUM(amount), 0) FROM points_ledger pl WHERE pl.user_id = u.id) AS points
+       FROM users u WHERE u.id = $1`,
+      [id]
+    );
+    res.json(fresh[0] || rows[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -33,7 +82,19 @@ exports.getMe = async (req, res) => {
        FROM users u WHERE u.firebase_uid = $1`,
       [req.user.uid]
     );
-    if (rows.length) return res.json(rows[0]);
+    if (rows.length) {
+      await ensureCampusId(rows[0].id);
+      await ensureSignupBonus(rows[0].id);
+      const { rows: fresh } = await db.query(
+        `SELECT u.*,
+          (SELECT COUNT(*) FROM connections c WHERE (c.requester_id = u.id OR c.receiver_id = u.id) AND c.status = 'accepted') AS connections_count,
+          (SELECT COUNT(*) FROM notes n WHERE n.uploader_id = u.id AND n.is_approved = true) AS notes_count,
+          (SELECT COALESCE(SUM(amount), 0) FROM points_ledger pl WHERE pl.user_id = u.id) AS points
+         FROM users u WHERE u.firebase_uid = $1`,
+        [req.user.uid]
+      );
+      return res.json(fresh[0] || rows[0]);
+    }
 
     const email = req.user.email || '';
     const name = req.user.name || req.user.displayName || email.split('@')[0] || 'User';
@@ -45,6 +106,8 @@ exports.getMe = async (req, res) => {
        ON CONFLICT (firebase_uid) DO UPDATE SET email = EXCLUDED.email RETURNING *`,
       [req.user.uid, email, name, photo]
     );
+    await ensureCampusId(created[0].id);
+    await ensureSignupBonus(created[0].id);
     const { rows: withCounts } = await db.query(
       `SELECT u.*,
         (SELECT COUNT(*) FROM connections c WHERE (c.requester_id = u.id OR c.receiver_id = u.id) AND c.status = 'accepted') AS connections_count,
@@ -122,6 +185,61 @@ exports.updateProfile = async (req, res) => {
     );
 
     res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ── GET /users/by-campus/:campusId ──────────────────────
+// Public mini-profile to verify receiver before points transfer
+exports.getByCampusId = async (req, res) => {
+  try {
+    const cid = (req.params.campusId || '').toString().trim().toUpperCase();
+    if (!cid) return res.status(400).json({ error: 'campusId required' });
+    const { rows } = await db.query(
+      `SELECT u.id, u.name, u.photo_url, u.college, u.city, u.state, u.campus_id
+       FROM users u WHERE UPPER(u.campus_id) = $1`,
+      [cid]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Student not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ── POST /users/transfer {to_campus_id, amount} ──────────
+// Student → student points transfer (atomic, balance-checked)
+exports.transferPoints = async (req, res) => {
+  try {
+    const toCampusId = (req.body.to_campus_id || '').toString().trim().toUpperCase();
+    const amount = parseStrictAmount(req.body.amount);
+    if (!toCampusId) return res.status(400).json({ error: 'to_campus_id required' });
+    if (!amount) return res.status(400).json({ error: 'valid amount required' });
+    if (amount > 100000) return res.status(400).json({ error: 'amount too large' });
+
+    const { rows: me } = await db.query('SELECT id FROM users WHERE firebase_uid = $1', [req.user.uid]);
+    if (!me.length) return res.status(404).json({ error: 'User not found' });
+    const senderId = me[0].id;
+
+    const { rows: recv } = await db.query('SELECT id, name FROM users WHERE UPPER(campus_id) = $1', [toCampusId]);
+    if (!recv.length) return res.status(404).json({ error: 'Receiver not found' });
+    if (recv[0].id === senderId) return res.status(400).json({ error: 'Cannot transfer to yourself' });
+
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('SELECT id FROM users WHERE id = $1 FOR UPDATE', [senderId]);
+      const { rows: b } = await client.query('SELECT COALESCE(SUM(amount),0)::int AS bal FROM points_ledger WHERE user_id = $1', [senderId]);
+      if (b[0].bal < amount) { await client.query('ROLLBACK'); return res.status(400).json({ error: `Insufficient points. Balance: ${b[0].bal}` }); }
+      await client.query(`INSERT INTO points_ledger (id, user_id, amount, reason) VALUES ($1,$2,$3,$4)`, [uuidv4(), senderId, -amount, `points_transfer_sent:${recv[0].id}`]);
+      await client.query(`INSERT INTO points_ledger (id, user_id, amount, reason) VALUES ($1,$2,$3,$4)`, [uuidv4(), recv[0].id, amount, `points_transfer_received:${senderId}`]);
+      const { rows: nb } = await client.query('SELECT COALESCE(SUM(amount),0)::int AS bal FROM points_ledger WHERE user_id = $1', [senderId]);
+      await client.query('COMMIT');
+      res.json({ sent: amount, to: recv[0].name, new_balance: nb[0].bal });
+    } catch (e) { await client.query('ROLLBACK'); throw e; } finally { client.release(); }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
