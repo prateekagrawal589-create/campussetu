@@ -26,7 +26,7 @@ class PremiumBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.gold.withOpacity(0.4),
+            color: AppColors.gold.withValues(alpha: 0.4),
             blurRadius: 8,
             spreadRadius: 1,
           ),
@@ -56,9 +56,9 @@ class VerifiedBadge extends StatelessWidget {
         vertical: isSmall ? 2 : 4,
       ),
       decoration: BoxDecoration(
-        color: AppColors.cyanDeep.withOpacity(0.12),
+        color: AppColors.cyanDeep.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.cyanDeep.withOpacity(0.3), width: 1),
+        border: Border.all(color: AppColors.cyanDeep.withValues(alpha: 0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
