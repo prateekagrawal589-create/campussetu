@@ -75,6 +75,6 @@ class AppColors {
   ];
 
   static List<BoxShadow> get cyanGlowShadows => [
-    BoxShadow(color: cyan.withOpacity(0.3), blurRadius: 24, spreadRadius: 2),
+    BoxShadow(color: cyan.withValues(alpha: 0.3), blurRadius: 24, spreadRadius: 2),
   ];
 }
