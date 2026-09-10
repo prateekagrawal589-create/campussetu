@@ -1,5 +1,29 @@
 // backend/src/controllers/posts.controller.js
 const db = require('../config/db');
+const { v4: uuidv4 } = require('uuid');
+
+// Awards 20 pts per 100 likes on a post (each 100-like milestone once)
+async function awardLikeMilestones(postId, authorId) {
+  try {
+    const { rows: c } = await db.query('SELECT COUNT(*)::int AS n FROM post_likes WHERE post_id = $1', [postId]);
+    const level = Math.floor((c[0].n || 0) / 100);
+    let awarded = 0;
+    for (let l = 1; l <= level; l++) {
+      try {
+        const reason = `post_like_milestone:${postId}:${l}`;
+        const { rows } = await db.query(
+          `INSERT INTO points_ledger (id, user_id, amount, reason)
+           SELECT $1, $2, 20, $3
+           WHERE NOT EXISTS (SELECT 1 FROM points_ledger WHERE user_id = $2 AND reason = $3)
+           RETURNING id`,
+          [uuidv4(), authorId, reason]
+        );
+        if (rows.length) awarded += 20;
+      } catch (e) { if (e.code !== '23505') throw e; }
+    }
+    return awarded;
+  } catch (_) { return 0; }
+}
 
 // ── GET /feed ────────────────────────────────────────────
 exports.getFeed = async (req, res) => {
@@ -49,24 +73,34 @@ exports.createPost = async (req, res) => {
 };
 
 // ── POST /posts/:id/like ──────────────────────────────────
+// Fast: responds immediately with fresh counts; milestone awarded async.
 exports.toggleLike = async (req, res) => {
   try {
     const { rows: me } = await db.query('SELECT id FROM users WHERE firebase_uid = $1', [req.user.uid]);
     if (!me.length) return res.status(404).json({ error: 'User not found' });
     const userId = me[0].id;
 
+    const { rows: p } = await db.query('SELECT author_id FROM posts WHERE id = $1 AND is_deleted = false', [req.params.id]);
+    if (!p.length) return res.status(404).json({ error: 'Post not found' });
+    const authorId = p[0].author_id;
+
     const { rows: existing } = await db.query(
       'SELECT 1 FROM post_likes WHERE post_id = $1 AND user_id = $2',
       [req.params.id, userId]
     );
 
+    let liked;
     if (existing.length) {
       await db.query('DELETE FROM post_likes WHERE post_id = $1 AND user_id = $2', [req.params.id, userId]);
-      res.json({ liked: false });
+      liked = false;
     } else {
       await db.query('INSERT INTO post_likes (post_id, user_id) VALUES ($1, $2)', [req.params.id, userId]);
-      res.json({ liked: true });
+      liked = true;
     }
+
+    const { rows: c } = await db.query('SELECT COUNT(*)::int AS n FROM post_likes WHERE post_id = $1', [req.params.id]);
+    if (liked && authorId !== userId) awardLikeMilestones(req.params.id, authorId).catch(() => {});
+    res.json({ liked, likes_count: c[0].n });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -90,13 +124,24 @@ exports.getComments = async (req, res) => {
 // ── POST /posts/:id/comment ───────────────────────────────
 exports.addComment = async (req, res) => {
   try {
-    const { content } = req.body;
+    const content = (req.body.content || '').toString().trim();
+    if (!content) return res.status(400).json({ error: 'Comment cannot be empty' });
+    if (content.length > 500) return res.status(400).json({ error: 'Comment too long (max 500)' });
     const { rows: me } = await db.query('SELECT id FROM users WHERE firebase_uid = $1', [req.user.uid]);
     if (!me.length) return res.status(404).json({ error: 'User not found' });
 
-    const { rows } = await db.query(
-      'INSERT INTO post_comments (post_id, author_id, content) VALUES ($1, $2, $3) RETURNING *',
+    const { rows: post } = await db.query('SELECT id FROM posts WHERE id = $1 AND is_deleted = false', [req.params.id]);
+    if (!post.length) return res.status(404).json({ error: 'Post not found' });
+
+    const { rows: ins } = await db.query(
+      'INSERT INTO post_comments (post_id, author_id, content) VALUES ($1, $2, $3) RETURNING id',
       [req.params.id, me[0].id, content]
+    );
+    const { rows } = await db.query(
+      `SELECT c.*, row_to_json(u.*) AS author,
+        (SELECT COUNT(*)::int FROM post_comments WHERE post_id = $2) AS comments_count
+       FROM post_comments c JOIN users u ON u.id = c.author_id WHERE c.id = $1`,
+      [ins[0].id, req.params.id]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
