@@ -15,6 +15,7 @@ const tshareRouter = require('./routes/tshare.routes');
 const notesRouter = require('./routes/notes.routes');
 const jobsRouter = require('./routes/jobs.routes');
 const productsRouter = require('./routes/products.routes');
+const helpingRouter = require('./routes/helping.routes');
 const adminRouter = require('./routes/admin.routes');
 
 const app = express();
@@ -49,6 +50,7 @@ app.use('/api/v1/tshare', tshareRouter);
 app.use('/api/v1/notes', notesRouter);
 app.use('/api/v1/jobs', jobsRouter);
 app.use('/api/v1/products', productsRouter);
+app.use('/api/v1/helping', helpingRouter);
 app.use('/api/v1/admin', adminRouter);
 
 // ── Health check ───────────────────────────────────────────
@@ -80,6 +82,31 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
+
+// ── Safety: ensure like/comment tables exist (older DBs) ────
+(async () => {
+  try {
+    const db = require('./config/db');
+    await db.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
+    await db.query(`CREATE TABLE IF NOT EXISTS post_likes (
+      post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ DEFAULT NOW(), PRIMARY KEY (post_id, user_id))`);
+    await db.query(`CREATE TABLE IF NOT EXISTS post_comments (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+      author_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      content TEXT NOT NULL CHECK (char_length(content) <= 500),
+      created_at TIMESTAMPTZ DEFAULT NOW())`);
+    await db.query(`CREATE TABLE IF NOT EXISTS points_ledger (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      amount INT NOT NULL, reason TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW())`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS campus_id TEXT UNIQUE`);
+    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uq_points_signup_once ON points_ledger (user_id) WHERE reason = 'signup_bonus'`);
+    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uq_points_milestone_once ON points_ledger (user_id, reason) WHERE reason LIKE 'post_like_milestone:%'`);
+  } catch (e) { console.warn('Table ensure warning:', e.message); }
+})();
 
 // ── Start ──────────────────────────────────────────────────
 app.listen(PORT, () => {
