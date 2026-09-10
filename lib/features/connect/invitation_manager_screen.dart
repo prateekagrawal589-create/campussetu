@@ -166,8 +166,8 @@ class _SuggestionsListState extends State<_SuggestionsList> {
           child: Row(children: [
             UserAvatar(name: name, size: 48, imageUrl: m['photo_url']?.toString()),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)), Text((m['college'] ?? '').toString(), style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)), maxLines: 1, overflow: TextOverflow.ellipsis), Row(children: [Container(width: 18, height: 18, decoration: const BoxDecoration(color: Color(0xFFE8E8E8), shape: BoxShape.circle), child: const Icon(Icons.people_rounded, size: 10, color: Color(0xFF6B7280))), const SizedBox(width: 4), Text('mutual connections', style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280)))])])),
-            OutlinedButton(onPressed: () async { try { await ApiService().sendConnectionRequest(m['id'].toString()); if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request sent'))); } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e'))); } }, style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFF0A66C2)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('Connect', style: TextStyle(color: Color(0xFF0A66C2), fontWeight: FontWeight.w700, fontSize: 12))),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)), Text((m['college'] ?? '').toString(), style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)), maxLines: 1, overflow: TextOverflow.ellipsis), Row(children: [Container(width: 18, height: 18, decoration: const BoxDecoration(color: Color(0xFFE8E8E8), shape: BoxShape.circle), child: const Icon(Icons.people_rounded, size: 10, color: Color(0xFF6B7280))), const SizedBox(width: 4), const Text('mutual connections', style: TextStyle(fontSize: 10, color: Color(0xFF6B7280)))])])),
+            OutlinedButton(onPressed: () async { final messenger = ScaffoldMessenger.of(context); try { await ApiService().sendConnectionRequest(m['id'].toString()); if (!mounted) return; messenger.showSnackBar(const SnackBar(content: Text('Request sent'))); } catch (e) { if (!mounted) return; messenger.showSnackBar(SnackBar(content: Text('Failed: $e'))); } }, style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFF0A66C2)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), child: const Text('Connect', style: TextStyle(color: Color(0xFF0A66C2), fontWeight: FontWeight.w700, fontSize: 12))),
           ]),
         );
       }).toList()),
@@ -237,7 +237,7 @@ class _SentTabState extends State<_SentTab> {
                   UserAvatar(name: name, size: 52, imageUrl: other['photo_url']?.toString()),
                   const SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)), Text((other['college'] ?? '').toString(), style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)), maxLines: 1, overflow: TextOverflow.ellipsis), const Text('Sent today', style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)))])),
-                  TextButton(onPressed: () async { try { await ApiService().removeConnection(id); if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Withdrawn'), backgroundColor: AppColors.success)); _load(); } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e'), backgroundColor: AppColors.error)); } }, child: const Text('Withdraw', style: TextStyle(color: Color(0xFF1A1D24), fontWeight: FontWeight.w700))),
+                  TextButton(onPressed: () async { final messenger = ScaffoldMessenger.of(context); try { await ApiService().removeConnection(id); if (!mounted) return; messenger.showSnackBar(const SnackBar(content: Text('Withdrawn'), backgroundColor: AppColors.success)); _load(); } catch (e) { if (!mounted) return; messenger.showSnackBar(SnackBar(content: Text('Failed: $e'), backgroundColor: AppColors.error)); } }, child: const Text('Withdraw', style: TextStyle(color: Color(0xFF1A1D24), fontWeight: FontWeight.w700))),
                 ]),
               );
             }),
@@ -245,8 +245,4 @@ class _SentTabState extends State<_SentTab> {
       ),
     );
   }
-}
-
-extension _ApiDio on ApiService {
-  dynamic getDioForCustom() => (this as dynamic)._dio;
 }
