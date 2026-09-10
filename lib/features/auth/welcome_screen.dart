@@ -7,7 +7,6 @@ import '../../core/services/api_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/widgets/neu_card.dart';
 import '../../core/router/app_router.dart';
 
 class WelcomeScreen extends ConsumerStatefulWidget {
@@ -53,7 +52,6 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -91,13 +89,13 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> with SingleTicker
               // ── Feature Strips ────────────────────────────
               Column(
                 children: [
-                  _FeatureRow(Icons.people_rounded, 'Connect with students across India'),
+                  const _FeatureRow(Icons.people_rounded, 'Connect with students across India'),
                   const SizedBox(height: 12),
-                  _FeatureRow(Icons.work_rounded, 'Discover jobs & internships'),
+                  const _FeatureRow(Icons.work_rounded, 'Discover jobs & internships'),
                   const SizedBox(height: 12),
-                  _FeatureRow(Icons.share_rounded, 'Share code snippets instantly with Tshare'),
+                  const _FeatureRow(Icons.share_rounded, 'Share code snippets instantly with Tshare'),
                   const SizedBox(height: 12),
-                  _FeatureRow(Icons.store_rounded, 'Campus marketplace for your city'),
+                  const _FeatureRow(Icons.store_rounded, 'Campus marketplace for your city'),
                 ]
                     .animate(interval: 100.ms, delay: 500.ms)
                     .slideX(begin: -0.2, duration: 500.ms, curve: Curves.easeOut)
@@ -169,8 +167,8 @@ class _BrandOrbState extends State<_BrandOrb> with SingleTickerProviderStateMixi
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
-              BoxShadow(color: AppColors.shadowDark, offset: Offset(12, 12), blurRadius: 24),
-              BoxShadow(color: AppColors.shadowLight, offset: Offset(-12, -12), blurRadius: 24),
+              BoxShadow(color: AppColors.shadowDark, offset: const Offset(12, 12), blurRadius: 24),
+              BoxShadow(color: AppColors.shadowLight, offset: const Offset(-12, -12), blurRadius: 24),
             ],
             color: AppColors.bg,
           ),
@@ -198,7 +196,7 @@ class _FeatureRow extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: AppColors.cyanDeep.withOpacity(0.1),
+            color: AppColors.cyanDeep.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: AppColors.cyanDeep, size: 18),
@@ -256,10 +254,9 @@ class _GoogleSignInButtonState extends State<_GoogleSignInButton> {
               )
             else ...[
               // Google G logo
-              Container(
+              const SizedBox(
                 width: 28,
                 height: 28,
-                decoration: const BoxDecoration(shape: BoxShape.circle),
                 child: Icon(Icons.g_mobiledata_rounded, color: Color(0xFF4285F4), size: 28),
               ),
               const SizedBox(width: 12),
