@@ -128,7 +128,7 @@ class _HelpingTaskDetailScreenState extends ConsumerState<HelpingTaskDetailScree
             final v = async.value;
             final isPoster = v != null && v['is_poster'] == true;
             if (!isPoster) return const SizedBox.shrink();
-            return IconButton(icon: Icon(Icons.delete_outline_rounded, color: AppColors.error), onPressed: _busy ? null : _delete);
+            return IconButton(icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error), onPressed: _busy ? null : _delete);
           }),
         ],
       ),
@@ -148,21 +148,21 @@ class _HelpingTaskDetailScreenState extends ConsumerState<HelpingTaskDetailScree
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: (isPaid ? AppColors.success : AppColors.warning).withOpacity(0.12), borderRadius: BorderRadius.circular(8)), child: Text(isPaid ? '💰 Paid' : '⭐ Points', style: AppTypography.interBadge(color: isPaid ? AppColors.success : AppColors.warning))),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: (isPaid ? AppColors.success : AppColors.warning).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)), child: Text(isPaid ? '💰 Paid' : '⭐ Points', style: AppTypography.interBadge(color: isPaid ? AppColors.success : AppColors.warning))),
                 const SizedBox(width: 8),
-                Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: AppColors.ink.withOpacity(0.06), borderRadius: BorderRadius.circular(8)), child: Text(reward, style: AppTypography.monoCode(size: 14, weight: FontWeight.w700))),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: AppColors.ink.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(8)), child: Text(reward, style: AppTypography.monoCode(size: 14, weight: FontWeight.w700))),
                 const Spacer(),
-                Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: status == 'open' ? AppColors.cyanDeep.withOpacity(0.1) : AppColors.success.withOpacity(0.12), borderRadius: BorderRadius.circular(8)), child: Text(status.toUpperCase(), style: AppTypography.interBadge(color: status == 'open' ? AppColors.cyanDeep : AppColors.success))),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: status == 'open' ? AppColors.cyanDeep.withValues(alpha: 0.1) : AppColors.success.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)), child: Text(status.toUpperCase(), style: AppTypography.interBadge(color: status == 'open' ? AppColors.cyanDeep : AppColors.success))),
               ]),
               if (isHold)
-                Container(width: double.infinity, padding: const EdgeInsets.all(12), margin: const EdgeInsets.only(bottom: 12), decoration: BoxDecoration(color: AppColors.inkSoft.withOpacity(0.12), borderRadius: BorderRadius.circular(12)), child: Row(children: [Icon(Icons.pause_circle_outline_rounded, size: 18, color: AppColors.inkSoft), const SizedBox(width: 8), Expanded(child: Text('⏸ Ye task hold par hai (7 days expiry). ${isPoster ? 'Sirf aap dekh sakte ho.' : 'Ab apply nahi ho sakta.'}', style: AppTypography.interBody(color: AppColors.inkSoft, size: 13)))])),
+                Container(width: double.infinity, padding: const EdgeInsets.all(12), margin: const EdgeInsets.only(bottom: 12), decoration: BoxDecoration(color: AppColors.inkSoft.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)), child: Row(children: [Icon(Icons.pause_circle_outline_rounded, size: 18, color: AppColors.inkSoft), const SizedBox(width: 8), Expanded(child: Text('⏸ Ye task hold par hai (7 days expiry). ${isPoster ? 'Sirf aap dekh sakte ho.' : 'Ab apply nahi ho sakta.'}', style: AppTypography.interBody(color: AppColors.inkSoft, size: 13)))])),
               const SizedBox(height: 2),
               Text((d['title'] ?? '').toString(), style: AppTypography.soraHeading2()),
               const SizedBox(height: 6),
               Row(children: [Icon(Icons.schedule_outlined, size: 13, color: AppColors.inkSoft), const SizedBox(width: 4), Expanded(child: Text('Posted: ${_postedLabel(d['created_at']?.toString())}', style: AppTypography.interCaption(color: AppColors.inkSoft))), if (!isHold && status == 'open') Text('$daysLeft d left', style: AppTypography.interBadge(color: daysLeft <= 2 ? AppColors.error : AppColors.cyanDeep))]),
               const SizedBox(height: 6),
               Text((d['description'] ?? '').toString(), style: AppTypography.interBody(color: AppColors.inkSoft)),
-              if (img.isNotEmpty) ...[const SizedBox(height: 14), ClipRRect(borderRadius: BorderRadius.circular(16), child: CachedNetworkImage(imageUrl: img, width: double.infinity, fit: BoxFit.cover, placeholder: (_, __) => Container(height: 180, color: AppColors.shadowDark.withOpacity(0.15)), errorWidget: (_, __, ___) => const SizedBox.shrink()))],
+              if (img.isNotEmpty) ...[const SizedBox(height: 14), ClipRRect(borderRadius: BorderRadius.circular(16), child: CachedNetworkImage(imageUrl: img, width: double.infinity, fit: BoxFit.cover, placeholder: (_, __) => Container(height: 180, color: AppColors.shadowDark.withValues(alpha: 0.15)), errorWidget: (_, __, ___) => const SizedBox.shrink()))],
               const SizedBox(height: 12),
               NeuCard(
                 padding: const EdgeInsets.all(14),
@@ -174,14 +174,14 @@ class _HelpingTaskDetailScreenState extends ConsumerState<HelpingTaskDetailScree
                   Icon(Icons.open_in_new_rounded, size: 16, color: AppColors.inkSoft),
                 ]),
               ),
-              if (d['deadline'] != null && d['deadline'].toString().isNotEmpty) ...[const SizedBox(height: 10), Row(children: [Icon(Icons.event_outlined, size: 15, color: AppColors.error), const SizedBox(width: 6), Text('Deadline: ${d['deadline'].toString().split('T').first}', style: AppTypography.interBody(color: AppColors.error, size: 13))])],
+              if (d['deadline'] != null && d['deadline'].toString().isNotEmpty) ...[const SizedBox(height: 10), Row(children: [const Icon(Icons.event_outlined, size: 15, color: AppColors.error), const SizedBox(width: 6), Text('Deadline: ${d['deadline'].toString().split('T').first}', style: AppTypography.interBody(color: AppColors.error, size: 13))])],
               const SizedBox(height: 16),
               if (!isPoster && isHold)
-                Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: AppColors.inkSoft.withOpacity(0.12), borderRadius: BorderRadius.circular(14)), alignment: Alignment.center, child: Text('⏸ Task on hold — expired', style: AppTypography.interButton(color: AppColors.inkSoft))),
+                Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: AppColors.inkSoft.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(14)), alignment: Alignment.center, child: Text('⏸ Task on hold — expired', style: AppTypography.interButton(color: AppColors.inkSoft))),
               if (!isPoster && status == 'open' && !isHold)
                 GestureDetector(
                   onTap: _busy ? null : (myApp != null ? null : _apply),
-                  child: Container(width: double.infinity, height: 54, decoration: BoxDecoration(gradient: myApp != null ? null : AppColors.cyanGradient, color: myApp != null ? AppColors.success.withOpacity(0.15) : null, borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: _busy ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text(myApp != null ? '✓ Applied (${myApp['status']})' : 'Apply for this Task', style: AppTypography.interButton(color: myApp != null ? AppColors.success : Colors.white))),
+                  child: Container(width: double.infinity, height: 54, decoration: BoxDecoration(gradient: myApp != null ? null : AppColors.cyanGradient, color: myApp != null ? AppColors.success.withValues(alpha: 0.15) : null, borderRadius: BorderRadius.circular(16)), alignment: Alignment.center, child: _busy ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text(myApp != null ? '✓ Applied (${myApp['status']})' : 'Apply for this Task', style: AppTypography.interButton(color: myApp != null ? AppColors.success : Colors.white))),
                 ),
               if (isPoster) ...[
                 Text('Applicants (${apps.length}) — tap profile to review', style: AppTypography.soraHeading3()),
@@ -220,7 +220,7 @@ class _HelpingTaskDetailScreenState extends ConsumerState<HelpingTaskDetailScree
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: _busy ? null : _delete,
-                  child: Container(width: double.infinity, height: 50, decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.error.withOpacity(0.4))), alignment: Alignment.center, child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error), const SizedBox(width: 8), Text('Delete Task', style: AppTypography.interButton(color: AppColors.error))])),
+                  child: Container(width: double.infinity, height: 50, decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.error.withValues(alpha: 0.4))), alignment: Alignment.center, child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error), const SizedBox(width: 8), Text('Delete Task', style: AppTypography.interButton(color: AppColors.error))])),
                 ),
               ],
             ]),
