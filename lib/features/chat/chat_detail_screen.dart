@@ -72,7 +72,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
         title: Row(
           children: [
-            UserAvatar(name: 'Priya Nair', size: 36),
+            const UserAvatar(name: 'Priya Nair', size: 36),
             const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,11 +83,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
           ],
         ),
-        actions: [
+        actions: const [
           NeuCard(
-            margin: const EdgeInsets.only(right: 16, top: 12, bottom: 12),
-            padding: const EdgeInsets.all(8),
-            child: const Icon(Icons.video_call_outlined, size: 20, color: AppColors.cyanDeep),
+            margin: EdgeInsets.only(right: 16, top: 12, bottom: 12),
+            padding: EdgeInsets.all(8),
+            child: Icon(Icons.video_call_outlined, size: 20, color: AppColors.cyanDeep),
           ),
         ],
       ),
