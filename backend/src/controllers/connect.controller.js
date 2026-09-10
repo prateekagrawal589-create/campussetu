@@ -95,3 +95,40 @@ exports.getPendingRequests = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// ── GET /connect/sent ─────────────────────────────────────
+exports.getSentRequests = async (req, res) => {
+  try {
+    const { rows: me } = await db.query('SELECT id FROM users WHERE firebase_uid = $1', [req.user.uid]);
+    if (!me.length) return res.status(404).json({ error: 'User not found' });
+
+    const { rows } = await db.query(
+      `SELECT c.*, row_to_json(u.*) AS receiver
+       FROM connections c
+       JOIN users u ON u.id = c.receiver_id
+       WHERE c.requester_id = $1 AND c.status = 'pending'
+       ORDER BY c.created_at DESC`,
+      [me[0].id]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ── DELETE /connect/:id ───────────────────────────────────
+exports.removeConnection = async (req, res) => {
+  try {
+    const { rows: me } = await db.query('SELECT id FROM users WHERE firebase_uid = $1', [req.user.uid]);
+    if (!me.length) return res.status(404).json({ error: 'User not found' });
+
+    const { rows } = await db.query(
+      `DELETE FROM connections WHERE id = $1 AND (requester_id = $2 OR receiver_id = $2) RETURNING *`,
+      [req.params.id, me[0].id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Connection not found' });
+    res.json({ removed: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
