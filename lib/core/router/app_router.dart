@@ -4,17 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final authStateProvider = StreamProvider<User?>((ref) => FirebaseAuth.instance.authStateChanges());
-
 import '../../features/auth/welcome_screen.dart';
 import '../../features/auth/auth_confirm_screen.dart';
 import '../../features/auth/profile_setup_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/connect/connect_screen.dart';
+import '../../features/connect/invitation_manager_screen.dart';
+import '../../features/connect/manage_network_screen.dart';
+import '../../features/connect/connections_screen.dart';
 import '../../features/chat/chat_list_screen.dart';
 import '../../features/chat/chat_detail_screen.dart';
 import '../../features/tshare/tshare_screen.dart';
 import '../../features/jobs/jobs_screen.dart';
+import '../../features/helping/helping_hand_screen.dart';
+import '../../features/helping/helping_task_detail_screen.dart';
 import '../../features/products/products_screen.dart';
 import '../../features/products/product_detail_screen.dart';
 import '../../features/resume/resume_screen.dart';
@@ -26,6 +29,8 @@ import '../../features/legal/terms_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
 import '../shell/main_shell.dart';
 
+final authStateProvider = StreamProvider<User?>((ref) => FirebaseAuth.instance.authStateChanges());
+
 class AppRoutes {
   static const welcome = '/';
   static const authConfirm = '/auth-confirm';
@@ -36,6 +41,8 @@ class AppRoutes {
   static const chatDetail = '/chat/:chatId';
   static const tshare = '/tshare';
   static const jobs = '/jobs';
+  static const helping = '/helping';
+  static const helpingDetail = '/helping/:taskId';
   static const products = '/products';
   static const productDetail = '/products/:productId';
   static const resume = '/resume';
@@ -45,6 +52,9 @@ class AppRoutes {
   static const privacy = '/privacy';
   static const terms = '/terms';
   static const notifications = '/notifications';
+  static const invitations = '/connect/invitations';
+  static const manageNetwork = '/connect/manage';
+  static const connections = '/connect/connections';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -95,6 +105,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(path: AppRoutes.tshare, builder: (_, __) => const TshareScreen()),
           GoRoute(path: AppRoutes.jobs, builder: (_, __) => const JobsScreen()),
+          GoRoute(path: AppRoutes.helping, builder: (_, __) => const HelpingHandScreen()),
+          GoRoute(path: AppRoutes.helpingDetail, builder: (_, state) => HelpingTaskDetailScreen(taskId: state.pathParameters['taskId']!)),
           GoRoute(path: AppRoutes.products, builder: (_, __) => const ProductsScreen()),
           GoRoute(
             path: AppRoutes.productDetail,
@@ -102,6 +114,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ProductDetailScreen(productId: state.pathParameters['productId']!),
           ),
           GoRoute(path: AppRoutes.resume, builder: (_, __) => const ResumeScreen()),
+          GoRoute(path: AppRoutes.invitations, builder: (_, __) => const InvitationManagerScreen()),
+          GoRoute(path: AppRoutes.manageNetwork, builder: (_, __) => const ManageNetworkScreen()),
+          GoRoute(path: AppRoutes.connections, builder: (_, __) => const ConnectionsScreen()),
           GoRoute(
             path: AppRoutes.profile,
             builder: (_, state) {
