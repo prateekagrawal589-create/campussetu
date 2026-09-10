@@ -23,11 +23,14 @@ exports.getUser = async (req, res) => {
 };
 
 // ── GET /users/me ────────────────────────────────────────
-// Optimized: single UPSERT, no extra admin.getUser call, uses decoded token data
 exports.getMe = async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT * FROM users WHERE firebase_uid = $1',
+      `SELECT u.*,
+        (SELECT COUNT(*) FROM connections c WHERE (c.requester_id = u.id OR c.receiver_id = u.id) AND c.status = 'accepted') AS connections_count,
+        (SELECT COUNT(*) FROM notes n WHERE n.uploader_id = u.id AND n.is_approved = true) AS notes_count,
+        (SELECT COALESCE(SUM(amount), 0) FROM points_ledger pl WHERE pl.user_id = u.id) AS points
+       FROM users u WHERE u.firebase_uid = $1`,
       [req.user.uid]
     );
     if (rows.length) return res.json(rows[0]);
@@ -42,7 +45,15 @@ exports.getMe = async (req, res) => {
        ON CONFLICT (firebase_uid) DO UPDATE SET email = EXCLUDED.email RETURNING *`,
       [req.user.uid, email, name, photo]
     );
-    return res.json(created[0]);
+    const { rows: withCounts } = await db.query(
+      `SELECT u.*,
+        (SELECT COUNT(*) FROM connections c WHERE (c.requester_id = u.id OR c.receiver_id = u.id) AND c.status = 'accepted') AS connections_count,
+        (SELECT COUNT(*) FROM notes n WHERE n.uploader_id = u.id AND n.is_approved = true) AS notes_count,
+        (SELECT COALESCE(SUM(amount), 0) FROM points_ledger pl WHERE pl.user_id = u.id) AS points
+       FROM users u WHERE u.id = $1`,
+      [created[0].id]
+    );
+    return res.json(withCounts[0] || created[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -111,6 +122,26 @@ exports.updateProfile = async (req, res) => {
     );
 
     res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ── POST /users/:id/photo ──────────────────────────────
+exports.uploadPhoto = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file' });
+    const firebaseUid = req.user.uid;
+    const fileUrl = `/uploads/${req.file.filename}`;
+    const { rows } = await db.query(
+      `UPDATE users SET photo_url = $1, updated_at = NOW() WHERE firebase_uid = $2 RETURNING *`,
+      [fileUrl, firebaseUid]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'User not found' });
+    const host = `${req.protocol}://${req.get('host')}`;
+    const fullUrl = `${host}${fileUrl}`;
+    res.json({ ...rows[0], photo_url: fullUrl, file_url: fullUrl });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
