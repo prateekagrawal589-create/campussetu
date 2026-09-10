@@ -43,13 +43,13 @@ class AdminDashboardScreen extends StatelessWidget {
                   // ── Key Metrics ──────────────────────────────
                   Text('Platform Overview', style: AppTypography.soraHeading3()),
                   const SizedBox(height: 12),
-                  Row(children: [
+                  const Row(children: [
                     Expanded(child: _MetricCard(label: 'Students', value: '12,487', icon: Icons.people_rounded, color: AppColors.cyanDeep)),
                     const SizedBox(width: 10),
                     Expanded(child: _MetricCard(label: 'Active Today', value: '3,291', icon: Icons.trending_up_rounded, color: AppColors.success)),
                   ]).animate().fadeIn(duration: 500.ms),
                   const SizedBox(height: 10),
-                  Row(children: [
+                  const Row(children: [
                     Expanded(child: _MetricCard(label: 'Posts', value: '48,203', icon: Icons.feed_rounded, color: AppColors.warning)),
                     const SizedBox(width: 10),
                     Expanded(child: _MetricCard(label: 'Reports', value: '7', icon: Icons.flag_rounded, color: AppColors.error)),
@@ -61,10 +61,10 @@ class AdminDashboardScreen extends StatelessWidget {
                   Text('Pending Actions', style: AppTypography.soraHeading3()),
                   const SizedBox(height: 12),
                   ...[
-                    _Action(title: 'Review Flagged Posts', badge: '7', color: AppColors.error, icon: Icons.flag_outlined),
-                    _Action(title: 'Verify College Badges', badge: '23', color: AppColors.warning, icon: Icons.verified_outlined),
-                    _Action(title: 'Pending Ad Approvals', badge: '4', color: AppColors.cyanDeep, icon: Icons.campaign_outlined),
-                    _Action(title: 'Note Verifications', badge: '11', color: AppColors.success, icon: Icons.menu_book_outlined),
+                    const _Action(title: 'Review Flagged Posts', badge: '7', color: AppColors.error, icon: Icons.flag_outlined),
+                    const _Action(title: 'Verify College Badges', badge: '23', color: AppColors.warning, icon: Icons.verified_outlined),
+                    const _Action(title: 'Pending Ad Approvals', badge: '4', color: AppColors.cyanDeep, icon: Icons.campaign_outlined),
+                    const _Action(title: 'Note Verifications', badge: '11', color: AppColors.success, icon: Icons.menu_book_outlined),
                   ].map((a) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: NeuCard(
@@ -73,14 +73,14 @@ class AdminDashboardScreen extends StatelessWidget {
                       child: Row(children: [
                         Container(
                           width: 42, height: 42,
-                          decoration: BoxDecoration(color: a.color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                          decoration: BoxDecoration(color: a.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
                           child: Icon(a.icon, color: a.color, size: 22),
                         ),
                         const SizedBox(width: 14),
                         Expanded(child: Text(a.title, style: AppTypography.interButton(color: AppColors.ink))),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(color: a.color.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                          decoration: BoxDecoration(color: a.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
                           child: Text(a.badge, style: AppTypography.interBadge(color: a.color)),
                         ),
                         const SizedBox(width: 8),
@@ -97,7 +97,7 @@ class AdminDashboardScreen extends StatelessWidget {
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       GlowText('Quick Actions', style: AppTypography.soraHeading3(color: AppColors.cyan)),
                       const SizedBox(height: 16),
-                      Row(children: [
+                      const Row(children: [
                         _QuickAction(icon: Icons.campaign_outlined, label: 'Broadcast', color: AppColors.cyan),
                         _QuickAction(icon: Icons.block_outlined, label: 'Ban User', color: AppColors.error),
                         _QuickAction(icon: Icons.star_outline, label: 'Feature', color: AppColors.gold),
@@ -158,7 +158,7 @@ class _QuickAction extends StatelessWidget {
         child: Column(children: [
           Container(
             width: 48, height: 48,
-            decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(14)),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(14)),
             child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(height: 6),
