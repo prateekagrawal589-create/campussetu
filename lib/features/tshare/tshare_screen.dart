@@ -56,7 +56,7 @@ class _TshareScreenState extends State<TshareScreen> with SingleTickerProviderSt
                       labelStyle: AppTypography.interButton(color: AppColors.cyanDeep),
                       unselectedLabelStyle: AppTypography.interButton(color: AppColors.inkSoft),
                       indicator: BoxDecoration(
-                        color: AppColors.cyanDeep.withOpacity(0.12),
+                        color: AppColors.cyanDeep.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       dividerColor: Colors.transparent,
@@ -198,7 +198,7 @@ class _ShareTabState extends State<_ShareTab> {
               decoration: BoxDecoration(
                 gradient: AppColors.darkTileGradient,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.cyan.withOpacity(0.3), width: 1),
+                border: Border.all(color: AppColors.cyan.withValues(alpha: 0.3), width: 1),
               ),
               alignment: Alignment.center,
               child: _isGenerating
@@ -237,7 +237,7 @@ class _ShareTabState extends State<_ShareTab> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      GlowDot(color: AppColors.cyan),
+                      const GlowDot(color: AppColors.cyan),
                       const SizedBox(width: 8),
                       GlowText(
                         'Expires in ${_formatDuration(_remaining)}',
@@ -264,9 +264,9 @@ class _ShareTabState extends State<_ShareTab> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       decoration: BoxDecoration(
-                        color: AppColors.cyanDeep.withOpacity(0.15),
+                        color: AppColors.cyanDeep.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.cyanDeep.withOpacity(0.3)),
+                        border: Border.all(color: AppColors.cyanDeep.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -301,7 +301,7 @@ class _LCDDigit extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF0A0C14),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.cyan.withOpacity(0.2), width: 1),
+        border: Border.all(color: AppColors.cyan.withValues(alpha: 0.2), width: 1),
       ),
       alignment: Alignment.center,
       child: Text(
@@ -331,8 +331,8 @@ class _RetrieveTabState extends State<_RetrieveTab> {
 
   @override
   void dispose() {
-    for (final c in _digitCtrls) c.dispose();
-    for (final f in _focusNodes) f.dispose();
+    for (final c in _digitCtrls) { c.dispose(); }
+    for (final f in _focusNodes) { f.dispose(); }
     super.dispose();
   }
 
@@ -353,8 +353,7 @@ class _RetrieveTabState extends State<_RetrieveTab> {
     }
     if (v.isNotEmpty) {
       _digitCtrls[index].text = v.replaceAll(RegExp(r'[^A-Z0-9]'), '').toUpperCase();
-      if (index < 3) _focusNodes[index + 1].requestFocus();
-      else _focusNodes[index].unfocus();
+      if (index < 3) { _focusNodes[index + 1].requestFocus(); } else { _focusNodes[index].unfocus(); }
     } else {
       if (index > 0) _focusNodes[index - 1].requestFocus();
     }
@@ -363,7 +362,7 @@ class _RetrieveTabState extends State<_RetrieveTab> {
 
   void _handlePaste(String text) {
     final chars = text.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '').split('');
-    for (int i = 0; i < 4; i++) _digitCtrls[i].text = i < chars.length ? chars[i] : '';
+    for (int i = 0; i < 4; i++) { _digitCtrls[i].text = i < chars.length ? chars[i] : ''; }
     setState(() {});
     if (chars.length >= 4) _focusNodes[3].unfocus();
   }
@@ -457,7 +456,7 @@ class _RetrieveTabState extends State<_RetrieveTab> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Icon(Icons.search_off_rounded, color: AppColors.error, size: 40),
+                  const Icon(Icons.search_off_rounded, color: AppColors.error, size: 40),
                   const SizedBox(height: 12),
                   Text('Code not found or expired', style: AppTypography.interButton(color: AppColors.ink)),
                   const SizedBox(height: 4),
@@ -524,7 +523,7 @@ class _CodeDigitField extends StatelessWidget {
         color: const Color(0xFF0A0C14),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: focusNode.hasFocus ? AppColors.cyan : (controller.text.isNotEmpty ? AppColors.cyan.withOpacity(0.5) : AppColors.cyanDeep.withOpacity(0.2)),
+          color: focusNode.hasFocus ? AppColors.cyan : (controller.text.isNotEmpty ? AppColors.cyan.withValues(alpha: 0.5) : AppColors.cyanDeep.withValues(alpha: 0.2)),
           width: focusNode.hasFocus ? 2 : 1.5,
         ),
       ),
