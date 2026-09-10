@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../models/post_model.dart';
+import '../models/helping_task_model.dart';
 import '../services/api_service.dart';
 import '../services/update_service.dart';
 
@@ -108,8 +109,7 @@ final chatUnreadCountProvider = FutureProvider<int>((ref) async {
     int total = 0;
     for (final t in threads) {
       final u = t['unread'] ?? t['unread_count'] ?? 0;
-      if (u is int) total += u;
-      else if (u is String) total += int.tryParse(u) ?? 0;
+      if (u is int) { total += u; } else if (u is String) { total += int.tryParse(u) ?? 0; }
     }
     return total;
   } catch (_) { return 0; }
@@ -126,6 +126,25 @@ final jobsNewCountProvider = FutureProvider<int>((ref) async {
 
 final updateAvailableProvider = FutureProvider<UpdateInfo?>((ref) async {
   try { return await UpdateService.checkForUpdate(); } catch (_) { return null; }
+});
+
+final helpingTasksProvider = FutureProvider.family<List<HelpingTask>, Map<String, dynamic>>((ref, filter) async {
+  await _ensureToken();
+  final type = filter['type'] == 'All' ? null : (filter['type'] as String?)?.toLowerCase();
+  final res = await ApiService().getHelpingTasks(
+    type: type == 'paid' || type == 'points' ? type : null,
+    mine: filter['mine'] == true,
+    status: (filter['status'] as String?) ?? 'open',
+    q: filter['q'] as String?,
+  );
+  final List list = (res['data'] as List?) ?? [];
+  return list.map((e) => HelpingTask.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+});
+
+final helpingTaskDetailProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
+  await _ensureToken();
+  final res = await ApiService().getHelpingTask(id);
+  return Map<String, dynamic>.from(res);
 });
 
 final profileProvider = FutureProvider.family<UserModel, String?>((ref, userId) async {
