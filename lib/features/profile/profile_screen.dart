@@ -22,6 +22,7 @@ import '../../core/widgets/premium_badge.dart';
 import '../../core/widgets/ring_progress.dart';
 import '../../core/widgets/user_avatar.dart';
 import '../../core/router/app_router.dart';
+import 'widgets/campus_id_card.dart';
 
 class ProfileScreen extends ConsumerWidget {
   final String? userId;
@@ -32,7 +33,10 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _EditProfileSheet(user: user, onSaved: () => ref.invalidate(profileProvider(userId))),
+      builder: (_) => _EditProfileSheet(user: user, onSaved: () {
+        ref.invalidate(profileProvider(userId));
+        ref.invalidate(currentUserProvider);
+      }),
     );
   }
 
@@ -77,7 +81,7 @@ class ProfileScreen extends ConsumerWidget {
                       onTap: () => isOwn ? _openEdit(context, ref, user) : null,
                       child: Stack(alignment: Alignment.bottomRight, children: [
                         EnergyRing(progress: user.profileCompletionScore, size: 86, centerChild: UserAvatar(name: user.name, imageUrl: user.photoUrl, size: 64, isVerified: user.isVerified)),
-                        if (isOwn) Container(padding: EdgeInsets.all(5), decoration: BoxDecoration(color: AppColors.cyanDeep, shape: BoxShape.circle, border: Border.all(color: AppColors.bg, width: 2)), child: Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white)),
+                        if (isOwn) Container(padding: const EdgeInsets.all(5), decoration: BoxDecoration(color: AppColors.cyanDeep, shape: BoxShape.circle, border: Border.all(color: AppColors.bg, width: 2)), child: const Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white)),
                       ]),
                     ),
                     const SizedBox(width: 16),
@@ -98,6 +102,8 @@ class ProfileScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [_StatCard(label: 'Connections', value: '${user.connectionsCount}', icon: Icons.people_rounded), const SizedBox(width: 10), _StatCard(label: 'Projects', value: '${user.projectsCount}', icon: Icons.folder_special_rounded), const SizedBox(width: 10), _StatCard(label: 'Points', value: '${user.points}', icon: Icons.emoji_events_rounded, color: AppColors.gold)]).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1),
+                const SizedBox(height: 16),
+                CampusIdCard(user: user, isOwn: isOwn).animate(delay: 80.ms).fadeIn(duration: 400.ms),
                 const SizedBox(height: 20),
                 if (user.bio != null && user.bio!.isNotEmpty) ...[
                   Text('About', style: AppTypography.soraHeading3()),
@@ -111,12 +117,12 @@ class ProfileScreen extends ConsumerWidget {
                   Wrap(spacing: 8, runSpacing: 8, children: user.skills.map((s) => NeuChip(label: s)).toList()).animate(delay: 150.ms).fadeIn(duration: 400.ms),
                   const SizedBox(height: 20),
                 ],
-                DarkTile(padding: EdgeInsets.all(18), onTap: () => context.go(AppRoutes.tshare), child: Row(children: [Icon(Icons.share_outlined, color: AppColors.cyan, size: 22), SizedBox(width: 14), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [GlowText('Tshare Profile', style: AppTypography.soraHeading3(color: AppColors.cyan)), Text('Share or retrieve code', style: AppTypography.interCaption(color: AppColors.inkSoft))]), Spacer(), Icon(Icons.arrow_forward_ios_rounded, color: AppColors.cyanDeep, size: 14)])).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+                DarkTile(padding: const EdgeInsets.all(18), onTap: () => context.go(AppRoutes.tshare), child: Row(children: [const Icon(Icons.share_outlined, color: AppColors.cyan, size: 22), const SizedBox(width: 14), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [GlowText('Tshare Profile', style: AppTypography.soraHeading3(color: AppColors.cyan)), Text('Share or retrieve code', style: AppTypography.interCaption(color: AppColors.inkSoft))]), const Spacer(), const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.cyanDeep, size: 14)])).animate(delay: 200.ms).fadeIn(duration: 400.ms),
                 const SizedBox(height: 20),
                 Row(children: [
-                  Expanded(child: NeuCard(padding: EdgeInsets.all(16), onTap: () => context.push(AppRoutes.resume), child: Row(children: [Icon(Icons.article_outlined, color: AppColors.cyanDeep, size: 20), SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Resume', style: AppTypography.interButton(color: AppColors.ink, size: 13)), Text('Build & export', style: AppTypography.interCaption())])]))),
+                  Expanded(child: NeuCard(padding: const EdgeInsets.all(16), onTap: () => context.push(AppRoutes.resume), child: Row(children: [const Icon(Icons.article_outlined, color: AppColors.cyanDeep, size: 20), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Resume', style: AppTypography.interButton(color: AppColors.ink, size: 13)), Text('Build & export', style: AppTypography.interCaption())])]))),
                   const SizedBox(width: 10),
-                  Expanded(child: NeuCard(padding: EdgeInsets.all(16), onTap: () => _openSettings(context), child: Row(children: [Icon(Icons.settings_outlined, color: AppColors.inkSoft, size: 20), SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Settings', style: AppTypography.interButton(color: AppColors.ink, size: 13)), Text('Account & privacy', style: AppTypography.interCaption())])]))),
+                  Expanded(child: NeuCard(padding: const EdgeInsets.all(16), onTap: () => _openSettings(context), child: Row(children: [const Icon(Icons.settings_outlined, color: AppColors.cyanDeep, size: 20), const SizedBox(width: 10), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Settings', style: AppTypography.interButton(color: AppColors.ink, size: 13)), Text('Account & privacy', style: AppTypography.interCaption())])]))),
                 ]).animate(delay: 250.ms).fadeIn(duration: 400.ms),
                 if (isOwn) ...[
                   const SizedBox(height: 16),
@@ -140,7 +146,7 @@ class _StatCard extends StatelessWidget {
   final Color color;
   const _StatCard({required this.label, required this.value, required this.icon, this.color = AppColors.cyanDeep});
   @override
-  Widget build(BuildContext context) => Expanded(child: NeuCard(padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16), child: Column(children: [Icon(icon, color: color, size: 22), SizedBox(height: 8), Text(value, style: AppTypography.monoCode(size: 20, weight: FontWeight.w700, color: AppColors.ink)), Text(label, style: AppTypography.interCaption(), textAlign: TextAlign.center)])));
+  Widget build(BuildContext context) => Expanded(child: NeuCard(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16), child: Column(children: [Icon(icon, color: color, size: 22), const SizedBox(height: 8), Text(value, style: AppTypography.monoCode(size: 20, weight: FontWeight.w700, color: AppColors.ink)), Text(label, style: AppTypography.interCaption(), textAlign: TextAlign.center)])));
 }
 
 class _EditProfileSheet extends StatefulWidget {
@@ -218,7 +224,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
           try {
             final res = await ApiService().uploadProfilePhoto(uid, _photoFile!.path);
             uploadedUrl = (res['photo_url'] ?? res['file_url'] ?? res['photoUrl'] ?? '').toString();
-            if (uploadedUrl == null || uploadedUrl.isEmpty) uploadedUrl = _photoUrl;
+            if (uploadedUrl.isEmpty) uploadedUrl = _photoUrl;
             if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Photo uploaded to server ✓'), backgroundColor: AppColors.success));
           } catch (e) {
             debugPrint('Backend upload failed: $e');
@@ -254,7 +260,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
     _skillInput.clear();
   }
 
-  Widget _fallbackAvatar() => Container(color: AppColors.cyanDeep.withOpacity(0.15), alignment: Alignment.center, child: Text(_name.text.isNotEmpty ? _name.text[0].toUpperCase() : '?', style: AppTypography.soraHeading2(color: AppColors.cyanDeep)));
+  Widget _fallbackAvatar() => Container(color: AppColors.cyanDeep.withValues(alpha: 0.15), alignment: Alignment.center, child: Text(_name.text.isNotEmpty ? _name.text[0].toUpperCase() : '?', style: AppTypography.soraHeading2(color: AppColors.cyanDeep)));
 
   @override
   Widget build(BuildContext context) {
@@ -265,7 +271,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
         margin: const EdgeInsets.all(16),
         decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(28), boxShadow: AppColors.neuRaisedShadows),
         child: Padding(
-          padding: EdgeInsets.only(bottom: 20, left: 20, right: 20, top: 20),
+          padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20, top: 20),
           child: SingleChildScrollView(
             padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -288,7 +294,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                                 : _fallbackAvatar()),
                       ),
                     ),
-                    Container(padding: EdgeInsets.all(6), decoration: BoxDecoration(color: AppColors.cyanDeep, shape: BoxShape.circle, border: Border.all(color: AppColors.bg, width: 2)), child: Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white)),
+                    Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: AppColors.cyanDeep, shape: BoxShape.circle, border: Border.all(color: AppColors.bg, width: 2)), child: const Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white)),
                   ]),
                 ),
               ),
@@ -396,8 +402,8 @@ class _SettingsSheetState extends ConsumerState<_SettingsSheet> {
             const SizedBox(height: 16),
             Text('Settings', style: AppTypography.soraHeading2()),
             const SizedBox(height: 16),
-            _tile(Icons.notifications_outlined, 'Notifications', Switch(value: _notif, onChanged: (v) => setState(() => _notif = v), activeColor: AppColors.cyanDeep)),
-            _tile(Icons.dark_mode_outlined, 'Dark Mode', Switch(value: isDark, onChanged: (_) => ref.read(themeModeProvider.notifier).toggle(), activeColor: AppColors.cyanDeep)),
+            _tile(Icons.notifications_outlined, 'Notifications', Switch(value: _notif, onChanged: (v) => setState(() => _notif = v), activeThumbColor: AppColors.cyanDeep)),
+            _tile(Icons.dark_mode_outlined, 'Dark Mode', Switch(value: isDark, onChanged: (_) => ref.read(themeModeProvider.notifier).toggle(), activeThumbColor: AppColors.cyanDeep)),
             _tile(Icons.privacy_tip_outlined, 'Privacy Policy', Icon(Icons.open_in_new_rounded, size: 16, color: AppColors.inkSoft), onTap: () { Navigator.pop(context); context.push(AppRoutes.privacy); }),
             _tile(Icons.description_outlined, 'Terms & Conditions', Icon(Icons.open_in_new_rounded, size: 16, color: AppColors.inkSoft), onTap: () { Navigator.pop(context); context.push(AppRoutes.terms); }),
             _tile(Icons.info_outline_rounded, 'App Version', Text(_appVersion, style: AppTypography.interCaption())),
@@ -410,7 +416,7 @@ class _SettingsSheetState extends ConsumerState<_SettingsSheet> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(gradient: AppColors.cyanGradient, borderRadius: BorderRadius.circular(16)),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Row(children: [const Icon(Icons.system_update_rounded, color: Colors.white, size: 18), const SizedBox(width: 8), Text('Update available', style: AppTypography.interButton(color: Colors.white, size: 14)), const Spacer(), Text('${_updateInfo!.latestVersion}', style: AppTypography.interBadge(color: Colors.white))]),
+                  Row(children: [const Icon(Icons.system_update_rounded, color: Colors.white, size: 18), const SizedBox(width: 8), Text('Update available', style: AppTypography.interButton(color: Colors.white, size: 14)), const Spacer(), Text(_updateInfo!.latestVersion, style: AppTypography.interBadge(color: Colors.white))]),
                   if (_updateInfo!.releaseNotes != null && _updateInfo!.releaseNotes!.isNotEmpty) ...[const SizedBox(height: 6), Text(_updateInfo!.releaseNotes!, style: const TextStyle(color: Colors.white70, fontSize: 11), maxLines: 3, overflow: TextOverflow.ellipsis)],
                   const SizedBox(height: 10),
                   if (_downloading) ...[LinearProgressIndicator(value: _progress, color: Colors.white, backgroundColor: Colors.white24), const SizedBox(height: 6), Text('${(_progress * 100).toInt()}% downloading...', style: const TextStyle(color: Colors.white, fontSize: 11))],
@@ -422,7 +428,7 @@ class _SettingsSheetState extends ConsumerState<_SettingsSheet> {
                 ]),
               ),
             if (!_checking && (_updateInfo == null || !_updateInfo!.hasUpdate))
-              Padding(padding: const EdgeInsets.only(top: 4), child: Row(children: [Icon(Icons.check_circle_rounded, size: 14, color: AppColors.success), const SizedBox(width: 6), Text('App is up to date', style: AppTypography.interCaption(color: AppColors.success))])),
+              Padding(padding: const EdgeInsets.only(top: 4), child: Row(children: [const Icon(Icons.check_circle_rounded, size: 14, color: AppColors.success), const SizedBox(width: 6), Text('App is up to date', style: AppTypography.interCaption(color: AppColors.success))])),
             if (!_checking)
               TextButton(onPressed: _checkUpdate, child: Text('Check again', style: AppTypography.interCaption(color: AppColors.cyanDeep))),
             const Divider(height: 24),
